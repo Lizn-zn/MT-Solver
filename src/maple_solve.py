@@ -3,7 +3,7 @@ from pysmt.shortcuts import REAL, INT, BOOL, Not, HRPrinter, BottemaPrinter
 from io import StringIO
 import subprocess
 from warnings import warn
-
+from src.result import Result
 from src.utils import *
 
 class bottema_compiler:
@@ -96,21 +96,21 @@ class bottema_solver(bottema_compiler):
     def solve(self):
         """ solve and parse the result 
         """
-        exec_command = f'interface(prettyprint=0): read "{bottema_path}": yprove({self.goals[0]}, [{",".join(self.exprs)}]);'
-        result = subprocess.run(['maple'], input=exec_command.encode(), capture_output=True, timeout=timeout)
+        exec_command = f'interface(prettyprint=0): read "./src/Bottema/bottema.mpl": yprove({self.goals[0]}, [{",".join(self.exprs)}]);'
+        result = subprocess.run(['maple'], input=exec_command.encode(), capture_output=True)
         output = result.stdout.decode('utf-8')
         error = result.stderr.decode('utf-8')
         start_marker, end_marker = exec_command, '> quit'
         output = parse_string(output, start_marker, end_marker)
         if "The inequality holds!" in output:
-            return True, ""
+            return Result.UNSAT, "no counter example exists"
         elif error == "": 
             start_marker = "`output a counter example`"
             end_marker = "`The inequality does not hold.`"
-            counter_example = parse_string(output, start_marker, end_marker) 
-            return False, counter_example
+            res = parse_string(output, start_marker, end_marker) 
+            return Result.SAT, res
         else:
-            return False, error
+            return Result.EXCEPT, error
         
 def bottema_solve(statement, solver_name="bottema"):
     s = bottema_solver()

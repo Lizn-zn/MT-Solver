@@ -18,9 +18,10 @@ setup(
     install_requires=[
         "sympy",
         "z3-solver",
+        "cvc5"
     ],
 
-    py_modules=['foo'],
+    packages=find_packages(),
     entry_points={  
         'console_scripts': [
             'mtsolve=src.foo:main',
