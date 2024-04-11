@@ -95,5 +95,11 @@ sym_compile_errors = (FormulaParseError, FunctionTypeError) # (ValueError, TypeE
 sympy_solve_errors = (SolutionTypeError, InvalidProblemType) # (TypeError, NotImplementedError, ValueError, IndexError, NotAlgebraic, NoConvergence, NotInvertible)
 scipy_solve_errors = (InfeasibleSolError, ScipyOptimError) # (TypeError, OverflowError, RuntimeError, ValueError, PysmtValueError, PysmtModeError, ZeroDivisionError, RecursionError)
 
+
+"""
+    __Summary__: handle maple exception
+"""
+maple_compile_errors = (UnsupportedOperatorError) 
+
 timeout_errors = MpTimeoutError
 

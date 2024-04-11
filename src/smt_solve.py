@@ -13,8 +13,8 @@ def pysmt_solve(statement, solver_name='z3'):
     try:
         with Opt(name=solver_name) as opt:
             logs = script.evaluate(opt)
-    except smt_compile_errors:
-        return Result.EXCEPT, "smt compilation failed!"
+    except smt_compile_errors as e:
+        return Result.EXCEPT, "smt compilation failed: {e}"
     except smt_solver_errors:
         return Result.EXCEPT, f"solver {solver_name} error"
     except smt_unsat:

@@ -7,6 +7,7 @@ from multiprocessing import Pool
 
 def solve(statement, solvers):
     solver_res = {}
+    res_msg = ""
     try:
         pool = Pool(len(solvers))
         future_res = {}
@@ -29,9 +30,11 @@ def solve(statement, solvers):
             solver_res[s] = res
             if res == Result.SAT or res == Result.UNSAT: 
                 return res, msg
+            else:
+                res_msg += f"solver {s} failed: {msg}\n"
     finally:
         pool.terminate()
         pool.join()
-    return None
+    return Result.UNKNOWN, msg
 
 

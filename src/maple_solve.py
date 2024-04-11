@@ -3,6 +3,7 @@ from pysmt.shortcuts import REAL, INT, BOOL, Not, HRPrinter, BottemaPrinter
 from io import StringIO
 import subprocess
 from warnings import warn
+from src.exceptions import maple_compile_errors
 from src.result import Result
 from src.utils import *
 
@@ -27,7 +28,7 @@ class bottema_compiler:
 
     def define_fun(self, name, vars, rtype, expr):
         """ Define a function for solving """
-        raise NotImplementedError('Unsupport command define-fun')
+        self.exprs.append(f"{name} := {expr.serialize(printer=BottemaPrinter)}")
 
     def define_fun_rec(self, name, vars, type, expr, recur_iter=10):
         """ Define a recursive function for solving 
@@ -114,7 +115,10 @@ class bottema_solver(bottema_compiler):
         
 def bottema_solve(statement, solver_name="bottema"):
     s = bottema_solver()
-    s.compile(statement) 
+    try:
+        s.compile(statement) 
+    except maple_compile_errors as e:
+        return Result.EXCEPT, f"maple compilation failed: {e}"
     res = s.solve()
     return res
 
