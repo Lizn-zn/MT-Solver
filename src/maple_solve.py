@@ -4,8 +4,7 @@ from io import StringIO
 import subprocess
 from warnings import warn
 
-from solver.config import *
-from solver.utils import *
+from src.utils import *
 
 class bottema_compiler:
     """ 
@@ -112,5 +111,11 @@ class bottema_solver(bottema_compiler):
             return False, counter_example
         else:
             return False, error
+        
+def bottema_solve(statement, solver_name="bottema"):
+    s = bottema_solver()
+    s.compile(statement) 
+    res = s.solve()
+    return res
 
             

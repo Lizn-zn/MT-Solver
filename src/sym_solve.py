@@ -12,14 +12,12 @@ from io import StringIO
 
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
-from timeout_decorator import timeout
 
-from MathGym.utils.exceptions import FormulaParseError, OptimParseError, FunctionTypeError, IllegalGetValueCommand
-from MathGym.utils.exceptions import NoCompliationError, InvalidProblemType, SolutionTypeError, InfeasibleSolError
-from MathGym.utils.exceptions import ScipyOptimError
+from src.exceptions import FormulaParseError, OptimParseError, FunctionTypeError, IllegalGetValueCommand
+from src.exceptions import NoCompliationError, InvalidProblemType, SolutionTypeError, InfeasibleSolError
+from src.exceptions import ScipyOptimError
 from sympy.core import SympifyError
 
-from config import *
 from warnings import warn
 
 class sym_compiler:
@@ -275,7 +273,6 @@ class sym_solver(sym_compiler):
     """ __summary__
         The following are the main functions for solving
     """
-    @timeout(timeout)
     def sympy_solve(self, statement=None):
         #### check-sat
         if len(self.vars) == 0: 
@@ -299,7 +296,6 @@ class sym_solver(sym_compiler):
     """ __summary__
         The following are the main functions for optimizing
     """
-    @timeout(60)
     def scipy_optim(self, statement=None):
         #### check-sat
         if len(self.vars) == 0: 
@@ -410,3 +406,13 @@ def globalize(func):
     result.__name__ = result.__qualname__ = uuid.uuid4().hex
     setattr(sys.modules[result.__module__], result.__name__, result)
     return result
+
+
+def sympy_solve(statement, solver_name='sysol'):
+    s = sym_solver()
+    s.compile(statement) 
+    if solver_name == "sysol":
+        res = s.sympy_solve()
+    elif solver_name == "syopt": 
+        res = s.scipy_optim()
+    return res

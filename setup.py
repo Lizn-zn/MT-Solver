@@ -1,14 +1,29 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name='your_tool',
-    version='0.1',
-    py_modules=['your_script'],
+    name='MT_Solver',  
+    version='0.1',  
+    
+    description='An integration of model theory solvers',  
+    
+    long_description=open('README.md').read(),  
+    long_description_content_type='text/markdown',  # 指定长描述的格式，这里是Markdown
+    
+    url='',      
+    author='',
+    author_email='',
+    
+    license='MIT',  
+        
     install_requires=[
-        'Click',
+        "sympy",
+        "z3-solver",
     ],
-    entry_points='''
-        [console_scripts]
-        your-tool=your_script:hello
-    ''',
+
+    py_modules=['foo'],
+    entry_points={  
+        'console_scripts': [
+            'mtsolve=src.foo:main',
+        ],
+    },
 )

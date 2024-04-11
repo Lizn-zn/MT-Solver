@@ -1,0 +1,4 @@
+build/*
+MT_Solver.egg-info/*
+src/MT_Solver.egg-info/*
+*.pyc
