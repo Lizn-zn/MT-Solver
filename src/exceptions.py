@@ -1,27 +1,27 @@
 """ __summary__
     Custom exceptions for the SymPy Compiler
 """
-class SymCompileError(Exception):
+class CompileError(Exception):
     """Base class for all custom exceptions in Compilation"""
     pass
 
-class NoStatementError(SymCompileError):
+class NoStatementError(CompileError):
     """Raised when there is no statement in the input"""
     pass
 
-class FormulaParseError(SymCompileError):
+class FormulaParseError(CompileError):
     """Raised when the formula cannot be parsed"""
     pass
 
-class OptimParseError(SymCompileError):
+class OptimParseError(CompileError):
     """Raised when the formula cannot be parsed"""
     pass
 
-class FunctionTypeError(SymCompileError):
+class FunctionTypeError(CompileError):
     """Raised when the type of a function is not as expected"""
     pass
 
-class IllegalGetValueCommand(SymCompileError):
+class IllegalGetValueCommand(CompileError):
     """The args in get-value command is not supported by the solver."""
     pass
 
@@ -99,7 +99,7 @@ scipy_solve_errors = (InfeasibleSolError, ScipyOptimError) # (TypeError, Overflo
 """
     __Summary__: handle maple exception
 """
-maple_compile_errors = (UnsupportedOperatorError) 
+maple_compile_errors = (UnsupportedOperatorError, FormulaParseError) 
 
 timeout_errors = MpTimeoutError
 

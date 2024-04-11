@@ -3,7 +3,7 @@ from pysmt.shortcuts import REAL, INT, BOOL, Not, HRPrinter, BottemaPrinter
 from io import StringIO
 import subprocess
 from warnings import warn
-from src.exceptions import maple_compile_errors
+from src.exceptions import maple_compile_errors, FormulaParseError
 from src.result import Result
 from src.utils import *
 
@@ -15,8 +15,7 @@ class bottema_compiler:
         self.word_dict = {}
         
     def _reset(self):
-        self.vars, self.cmds, self.exprs, self.goals = [], [], [], []
-        self.func_vars = {}, {}
+        self.vars, self.cmds, self.funs, self.exprs, self.goals = [], [], [], [], []
     
     def declare_var(self, name, type):
         """ Declare a variable for solving """
@@ -28,7 +27,7 @@ class bottema_compiler:
 
     def define_fun(self, name, vars, rtype, expr):
         """ Define a function for solving """
-        self.exprs.append(f"{name} := {expr.serialize(printer=BottemaPrinter)}")
+        self.funs.append(f"{name} := {expr.serialize(printer=BottemaPrinter)}")
 
     def define_fun_rec(self, name, vars, type, expr, recur_iter=10):
         """ Define a recursive function for solving 
@@ -48,7 +47,10 @@ class bottema_compiler:
         """
         for cmd in self.cmds[:-1]: 
             self.exprs.append(cmd.serialize(printer=BottemaPrinter))
-        self.goals.append(Not(self.cmds[-1]).serialize(printer=BottemaPrinter))
+        if self.cmds[-1].is_not():
+            self.goals.append(Not(self.cmds[-1]).serialize(printer=BottemaPrinter))
+        else:
+            raise FormulaParseError("the prove goal should be the negation form")
             
     def compile(self, statement):
         """ compile the smt-lib statement
@@ -97,7 +99,9 @@ class bottema_solver(bottema_compiler):
     def solve(self):
         """ solve and parse the result 
         """
-        exec_command = f'interface(prettyprint=0): read "./src/Bottema/bottema.mpl": yprove({self.goals[0]}, [{",".join(self.exprs)}]);'
+        func_cmd = ';'.join(self.funs)
+        prove_cmd = f'yprove({self.goals[0]}, [{",".join(self.exprs)}])'
+        exec_command = f'interface(prettyprint=0): read "./src/Bottema/bottema.mpl": {func_cmd}; {prove_cmd};'
         result = subprocess.run(['maple'], input=exec_command.encode(), capture_output=True)
         output = result.stdout.decode('utf-8')
         error = result.stderr.decode('utf-8')
@@ -105,13 +109,14 @@ class bottema_solver(bottema_compiler):
         output = parse_string(output, start_marker, end_marker)
         if "The inequality holds!" in output:
             return Result.UNSAT, "no counter example exists"
-        elif error == "": 
+        else:
             start_marker = "`output a counter example`"
             end_marker = "`The inequality does not hold.`"
             res = parse_string(output, start_marker, end_marker) 
-            return Result.SAT, res
-        else:
-            return Result.EXCEPT, error
+            if res != "": 
+                return Result.SAT, res
+            else:   
+                return Result.EXCEPT, error
         
 def bottema_solve(statement, solver_name="bottema"):
     s = bottema_solver()

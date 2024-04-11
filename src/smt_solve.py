@@ -15,12 +15,12 @@ def pysmt_solve(statement, solver_name='z3'):
             logs = script.evaluate(opt)
     except smt_compile_errors as e:
         return Result.EXCEPT, "smt compilation failed: {e}"
-    except smt_solver_errors:
-        return Result.EXCEPT, f"solver {solver_name} error"
+    except smt_solver_errors as e:
+        return Result.EXCEPT, f"solver {solver_name} error: {e}"
     except smt_unsat:
         return Result.UNSAT, "no counter example exists"
     except smt_unknown:
-        return Result.UNKNOWN, "unknown"
+        return Result.UNKNOWN, "solver returns unknown"
     """
     logs[-1] is exit; logs[-2] is get-model; logs[-3] is check-sat
     """ 
