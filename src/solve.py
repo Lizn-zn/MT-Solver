@@ -6,8 +6,15 @@ from src.exceptions import timeout_errors
 from multiprocessing import Pool
 
 def solve(statement, solvers):
+    """ integrated solving function
+    return SAT     if any solver find counter example
+           UNSAT   if any solver prove the problem
+           EXCEPT  if all solvers except
+           TIMEOUT if all solvers timeout
+           UNKNOWN if mixed return       
+    """
     solver_res = {}
-    res_msg = ""
+    res_lst, msg_lst = [], []
     try:
         pool = Pool(len(solvers))
         future_res = {}
@@ -26,15 +33,20 @@ def solve(statement, solvers):
                 timeout = int(solvers[s].get("timeout", 30))
                 res, msg = future_res[s].get(timeout)
             except timeout_errors:
-                res, msg = Result.TIMEOUT, "solver timeout"
+                res, msg = Result.TIMEOUT, "solve timeout"
             solver_res[s] = res
             if res == Result.SAT or res == Result.UNSAT: 
                 return res, msg
             else:
-                res_msg += f"solver {s} failed: {msg}\n"
+                res_lst.append(res)
+                msg_lst.append(msg)
     finally:
         pool.terminate()
         pool.join()
-    return Result.UNKNOWN, msg
+    if all([res == Result.TIMEOUT for res in res_lst]):
+        return Result.TIMEOUT, "solve timeout"
+    elif all([res == Result.EXCEPT for res in res_lst]):
+        return Result.EXCEPT, " | ".join(msg_lst)
+    return Result.UNKNOWN, " | ".join(msg_lst)
 
 

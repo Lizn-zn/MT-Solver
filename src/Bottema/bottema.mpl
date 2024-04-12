@@ -4259,11 +4259,15 @@ end:
 yprove:=proc(ineq)
    local id,nd,sb,i,j,iq,ids,cp:
 
+   if not type(args[1],`<=`) then RETURN("Proof goal should be non-open inequation"); fi;
    if nargs>2 then RETURN(`invalid arguments`);fi;
    id:=[op(indets(ineq))]:
    if nargs=2 then
    if not type(args[2],list) then RETURN(`invalid second argument`); fi;
       ids:={op(id)};
+      find_eq := 0;
+      for i to nops(args[2]) do if type(args[2][i],`=`) then find_eq := 1;fi;od; 
+      if find_eq = 1 then RETURN(`Invalid second argument`);fi;
       for i to nops(args[2]) do
          ids:={op(ids),op(indets(args[2][i]))}
       od;
@@ -4284,10 +4288,10 @@ print(sb[j]);
       if nargs=2 then
          iq:=subs(sb[j],args[2]):
          cp:=xprove(subs(sb[j],args[1]),iq,sb[j]);
-         if cp[1]<>1 then print(`   `);print(`output a counter example`);print(cp[2]);print(`The inequality does not hold.`);  RETURN(): fi
+         if cp[1]<>1 and cp[1]<>true[1] then print(`   `);print(`output a counter example`);print(cp[2]);print(`The inequality does not hold.`);  RETURN(): fi
       else
          cp:=xprove(subs(sb[j],args[1]),[],sb[j]);
-         if cp[1]<>1 then print(`   `);print(`output a counter example`);print(cp[2]);print(`The inequality does not hold.`); RETURN(): fi
+         if cp[1]<>1 and cp[1]<>true[1] then print(`   `);print(`output a counter example`);print(cp[2]);print(`The inequality does not hold.`); RETURN(): fi
       fi;
    od:
    print(`  `);
@@ -6706,10 +6710,14 @@ end:
 ###################################################################
 xprove:=proc(ineq)
    local i,m,m1,m2,n,xl,curves,pointl,N,l,ll,plist,k,its,temp,nn,vars,ep,poly,j,cp,ITS,cl,cq;
-
+   
+   if not type(args[1],`<=`) then RETURN("Proof goal should be non-open inequation"); fi;
    if nargs>3 then RETURN(`invalid arguments`);fi;
    if nargs>=2 then
       if not type(args[2],list) then RETURN(`invalid second argument`);fi;
+      find_eq := 0;
+      for i to nops(args[2]) do if type(args[2][i],`=`) then find_eq := 1;fi;od; 
+      if find_eq = 1 then RETURN(`Invalid second argument`);fi;
    fi;
 
    curves:=lhs(ineq)-rhs(ineq);

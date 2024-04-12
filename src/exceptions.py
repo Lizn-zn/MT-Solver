@@ -83,8 +83,8 @@ smt_compile_errors = (PysmtModeError, InvalidCommandArgs, SymIllegalGetValueComm
                         PysmtIllegalGetValueCommand, NoStatementError, NoCompliationError, \
                         OperatorMissingError, PysmtSyntaxError, PysmtTypeError, DefinitionMissingError, \
                         InvalidSetOption) 
-smt_solver_errors = (Z3Exception, InternalSolverError, ConvertExpressionError)
-smt_unsat = (ModelUnsatError, NoSolverAvailableError, ModelUnavilableError, )
+smt_solver_errors = (Z3Exception, NoSolverAvailableError, InternalSolverError, ConvertExpressionError)
+smt_unsat = (ModelUnsatError, ModelUnavilableError, )
 smt_unknown = (ModelUnsatError, SolverReturnedUnknownResultError, \
                     GoalUnavaibleError, PysmtUnboundedOptimizationError)
 
