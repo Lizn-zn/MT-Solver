@@ -30,11 +30,16 @@ def parse_string(s, start_marker, end_marker):
     else:
         return ""
     
-def wrap_exec(cmd, args, timeout):
+def normalize(args, solver_name):
+    # for key in args:
+        # if key == "timeout":
+            # args[key] = int(args[key])
+    args = {}
+    return args
+    
+def wrap_exec(cmd, args, timeout, pid_mgr):
     """ wrap the execution of command with timeout """
-    try:
-        process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setpgrp)
-        stdout_, stderr_ = process.communicate(args.encode(), timeout=timeout)
-    finally:
-        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-    return stdout_.decode('utf-8'), stderr_.decode('utf-8')
+    process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setpgrp)
+    pid_mgr.append(os.getpgid(process.pid))
+    stdout_, stderr_ = process.communicate(args.encode(), timeout=timeout)
+    return stdout_.decode("utf-8"), stderr_.decode("utf-8")

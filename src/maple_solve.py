@@ -1,7 +1,6 @@
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import REAL, INT, BOOL, Not, HRPrinter, BottemaPrinter
 from io import StringIO
-import subprocess
 from warnings import warn
 from src.exceptions import maple_compile_errors, FormulaParseError
 from src.result import Result
@@ -96,7 +95,7 @@ class bottema_solver(bottema_compiler):
     def reset(self):
         self.solutions = []
     
-    def solve(self, args):
+    def solve(self, args, pid_mgr):
         """ solve and parse the result 
         """
         exec_cmd = 'maple'
@@ -104,7 +103,7 @@ class bottema_solver(bottema_compiler):
         prove_cmd = f'yprove({self.goals[0]}, [{",".join(self.exprs)}])'
         exec_args = f'interface(prettyprint=0): read "./src/Bottema/bottema.mpl": {func_cmd}; {prove_cmd};'
         timeout = int(args.get("timeout", 30))
-        output, error = wrap_exec(exec_cmd, exec_args, timeout)
+        output, error = wrap_exec(exec_cmd, exec_args, timeout, pid_mgr)
         start_marker, end_marker = exec_args, '> quit'
         output = parse_string(output, start_marker, end_marker)
         if "The inequality holds!" in output:
@@ -118,13 +117,13 @@ class bottema_solver(bottema_compiler):
             else:   
                 return Result.EXCEPT, error
         
-def bottema_solve(statement, solver_name, args):
+def bottema_solve(statement, solver_name, args, pid_mgr):
     s = bottema_solver()
     try:
         s.compile(statement) 
     except maple_compile_errors as e:
         return Result.EXCEPT, f"maple compilation failed: {e}"
-    res = s.solve(args)
+    res = s.solve(args, pid_mgr)
     return res
 
             

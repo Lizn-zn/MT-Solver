@@ -1,9 +1,10 @@
 from src.smt_solve import pysmt_solve
 from src.sym_solve import sympy_solve
 from src.maple_solve import bottema_solve
+from src.utils import *
 from src.result import Result
 from src.exceptions import timeout_errors
-from multiprocessing import Pool
+from multiprocessing import Pool, Manager
 
 def solve(statement, solvers):
     """ integrated solving function
@@ -21,21 +22,21 @@ def solve(statement, solvers):
     res_lst, msg_lst = [], []
     try:
         pool = Pool(len(solvers))
+        pid_mgr = Manager().list()
         future_res = {}
         for s in solvers:
-            args = solvers[s]
             if s in ["cvc5", "z3", "msat"]:
-                tmp_solver = pool.apply_async(pysmt_solve, (statement, s, args))
+                tmp_solver = pool.apply_async(pysmt_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
             if s in ["sysol", "syopt"]:
-                tmp_solver = pool.apply_async(sympy_solve, (statement, s, args))
+                tmp_solver = pool.apply_async(sympy_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
             if s in ["bottema"]:
-                tmp_solver = pool.apply_async(bottema_solve, (statement, s, args))
+                tmp_solver = pool.apply_async(bottema_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
         for s in solvers:
             try:
-                timeout = int(solvers[s].get("timeout", 30)) + 2
+                timeout = int(solvers[s].get("timeout", 30))
                 res, msg = future_res[s].get(timeout)
             except timeout_errors:
                 res, msg = Result.TIMEOUT, "solve timeout"
@@ -46,7 +47,9 @@ def solve(statement, solvers):
                 res_lst.append(res)
                 msg_lst.append(msg)
     finally:
-        pool.close()
+        for pid in pid_mgr:
+            os.killpg(pid, signal.SIGKILL)
+        pool.terminate()
         pool.join()
     if all([res == Result.TIMEOUT for res in res_lst]):
         return Result.TIMEOUT, "solve timeout"

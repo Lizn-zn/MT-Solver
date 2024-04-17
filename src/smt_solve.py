@@ -4,14 +4,16 @@ from pysmt.shortcuts import Solver, Optimizer
 from src.exceptions import smt_compile_errors, smt_solver_errors, \
                             smt_unsat, smt_unknown
 from src.result import Result
+from src.utils import *
 
-def pysmt_solve(statement, solver_name, args):
+def pysmt_solve(statement, solver_name, args, pid_mgr):
+    solver_args = normalize(args, solver_name)
     smt_parser = SmtLibParser()
     smt_parser.env.enable_div_by_0 = False
     script = smt_parser.get_script(StringIO(statement))  
     Opt = Optimizer if any(cmd.name in ["maximize", "minimize"] for cmd in script) else Solver
     try:
-        with Opt(name=solver_name) as opt:
+        with Opt(name=solver_name, solver_options=solver_args) as opt:
             logs = script.evaluate(opt)
     except smt_compile_errors as e:
         return Result.EXCEPT, f"smt compilation failed: {e}"
