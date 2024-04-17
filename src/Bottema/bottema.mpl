@@ -4257,17 +4257,16 @@ end:
 
 
 yprove:=proc(ineq)
-   local id,nd,sb,i,j,iq,ids,cp:
+   local id,nd,sb,i,j,iq,ids,cp,cate:
 
-   if not type(args[1],`<=`) then RETURN("Proof goal should be non-open inequation"); fi;
    if nargs>2 then RETURN(`invalid arguments`);fi;
    id:=[op(indets(ineq))]:
    if nargs=2 then
    if not type(args[2],list) then RETURN(`invalid second argument`); fi;
+      cate:= category(args[1],args[2]);
+      if cate = 1 then RETURN(`Invalid second argument`);fi;
+      if cate = 0 then print(`Call xmin for open goal with non-open constraint`);xmin(lhs(ineq)-rhs(ineq)<=k,args[2],k);RETURN(true);fi;
       ids:={op(id)};
-      find_eq := 0;
-      for i to nops(args[2]) do if type(args[2][i],`=`) then find_eq := 1;fi;od; 
-      if find_eq = 1 then RETURN(`Invalid second argument`);fi;
       for i to nops(args[2]) do
          ids:={op(ids),op(indets(args[2][i]))}
       od;
@@ -6709,15 +6708,14 @@ end:
 
 ###################################################################
 xprove:=proc(ineq)
-   local i,m,m1,m2,n,xl,curves,pointl,N,l,ll,plist,k,its,temp,nn,vars,ep,poly,j,cp,ITS,cl,cq;
+   local i,m,m1,m2,n,xl,curves,pointl,N,l,ll,plist,k,its,temp,nn,vars,ep,poly,j,cp,ITS,cl,cq,cate;
    
-   if not type(args[1],`<=`) then RETURN("Proof goal should be non-open inequation"); fi;
    if nargs>3 then RETURN(`invalid arguments`);fi;
    if nargs>=2 then
       if not type(args[2],list) then RETURN(`invalid second argument`);fi;
-      find_eq := 0;
-      for i to nops(args[2]) do if type(args[2][i],`=`) then find_eq := 1;fi;od; 
-      if find_eq = 1 then RETURN(`Invalid second argument`);fi;
+      cate:= category(args[1],args[2]);
+      if cate = 1 then RETURN(`Invalid second argument`);fi;
+      if cate = 0 then print(`Call xmin for open goal with non-open constraint`);xmin(lhs(ineq)-rhs(ineq)<=k,args[2],k);RETURN(true);fi;
    fi;
 
    curves:=lhs(ineq)-rhs(ineq);
@@ -6952,10 +6950,26 @@ midpoint:=proc (poly, var, n, widthgoal)
 		return [[l, r]]:
 end proc:
 
+category:=proc (ineq,list)
+      local find_bound, find_eq,i;
+      find_bound := 0;
+      find_eq := 0;
+      for i to nops(list) do 
+         if hastype(list[i], `=`) then 
+               find_eq:= 1
+         elif hastype(list[i],`<=`) then 
+               find_bound:=1
+         fi;
+      od;
 
-
-
-
+      if find_eq = 1 then 
+            RETURN(1)
+      elif find_bound = 1 and hastype(ineq,`<`) then 
+            RETURN(0)
+      else 
+            RETURN(-1)
+      end if;
+end:
 
 #readlib(showtime):
 #showtime();

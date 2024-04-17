@@ -1,3 +1,4 @@
+(set-logic QF_NRA)
 (declare-fun b () Real)
 (declare-fun a () Real)
 (assert (= (+ (^ a 2.0) (^ b 2.0)) (* 2.0 a b)))

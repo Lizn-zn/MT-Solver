@@ -1,3 +1,4 @@
+(set-logic QF_NRA)
 (declare-fun a () Real)
 (declare-fun b () Real)
 (declare-fun c () Real)

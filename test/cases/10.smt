@@ -1,3 +1,4 @@
+(set-logic QF_NRA)
 (declare-const x Real)
 
 

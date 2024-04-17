@@ -4,7 +4,6 @@ sys.path.insert(0, '/data0/lizn/pysmt')
 from src.solve import solve
 from src.result import Result
 
-
 statements = {}
 for filename in os.listdir('./test/cases'):
     if filename.endswith(".smt"):

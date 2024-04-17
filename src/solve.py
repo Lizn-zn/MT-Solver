@@ -7,11 +7,15 @@ from multiprocessing import Pool
 
 def solve(statement, solvers):
     """ integrated solving function
-    return SAT     if any solver find counter example
-           UNSAT   if any solver prove the problem
-           EXCEPT  if all solvers except
-           TIMEOUT if all solvers timeout
-           UNKNOWN if mixed return       
+    Input 
+        statement is the smt-lib format problem
+        solver is a dict like {"z3":"z3's args", ...}
+    return 
+        SAT     if any solver find counter example
+        UNSAT   if any solver prove the problem
+        EXCEPT  if all solvers except
+        TIMEOUT if all solvers timeout
+        UNKNOWN if mixed return       
     """
     solver_res = {}
     res_lst, msg_lst = [], []
@@ -19,18 +23,19 @@ def solve(statement, solvers):
         pool = Pool(len(solvers))
         future_res = {}
         for s in solvers:
+            args = solvers[s]
             if s in ["cvc5", "z3", "msat"]:
-                tmp_solver = pool.apply_async(pysmt_solve, (statement, s))
+                tmp_solver = pool.apply_async(pysmt_solve, (statement, s, args))
                 future_res[s] = tmp_solver
             if s in ["sysol", "syopt"]:
-                tmp_solver = pool.apply_async(sympy_solve, (statement, s))
+                tmp_solver = pool.apply_async(sympy_solve, (statement, s, args))
                 future_res[s] = tmp_solver
             if s in ["bottema"]:
-                tmp_solver = pool.apply_async(bottema_solve, (statement, s))
+                tmp_solver = pool.apply_async(bottema_solve, (statement, s, args))
                 future_res[s] = tmp_solver
         for s in solvers:
             try:
-                timeout = int(solvers[s].get("timeout", 30))
+                timeout = int(solvers[s].get("timeout", 30)) + 2
                 res, msg = future_res[s].get(timeout)
             except timeout_errors:
                 res, msg = Result.TIMEOUT, "solve timeout"
@@ -41,7 +46,7 @@ def solve(statement, solvers):
                 res_lst.append(res)
                 msg_lst.append(msg)
     finally:
-        pool.terminate()
+        pool.close()
         pool.join()
     if all([res == Result.TIMEOUT for res in res_lst]):
         return Result.TIMEOUT, "solve timeout"

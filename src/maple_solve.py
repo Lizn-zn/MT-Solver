@@ -96,16 +96,16 @@ class bottema_solver(bottema_compiler):
     def reset(self):
         self.solutions = []
     
-    def solve(self):
+    def solve(self, args):
         """ solve and parse the result 
         """
+        exec_cmd = 'maple'
         func_cmd = ';'.join(self.funs)
         prove_cmd = f'yprove({self.goals[0]}, [{",".join(self.exprs)}])'
-        exec_command = f'interface(prettyprint=0): read "./src/Bottema/bottema.mpl": {func_cmd}; {prove_cmd};'
-        result = subprocess.run(['maple'], input=exec_command.encode(), capture_output=True)
-        output = result.stdout.decode('utf-8')
-        error = result.stderr.decode('utf-8')
-        start_marker, end_marker = exec_command, '> quit'
+        exec_args = f'interface(prettyprint=0): read "./src/Bottema/bottema.mpl": {func_cmd}; {prove_cmd};'
+        timeout = int(args.get("timeout", 30))
+        output, error = wrap_exec(exec_cmd, exec_args, timeout)
+        start_marker, end_marker = exec_args, '> quit'
         output = parse_string(output, start_marker, end_marker)
         if "The inequality holds!" in output:
             return Result.UNSAT, "no counter example exists"
@@ -118,13 +118,13 @@ class bottema_solver(bottema_compiler):
             else:   
                 return Result.EXCEPT, error
         
-def bottema_solve(statement, solver_name="bottema"):
+def bottema_solve(statement, solver_name, args):
     s = bottema_solver()
     try:
         s.compile(statement) 
     except maple_compile_errors as e:
         return Result.EXCEPT, f"maple compilation failed: {e}"
-    res = s.solve()
+    res = s.solve(args)
     return res
 
             

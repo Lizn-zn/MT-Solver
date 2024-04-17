@@ -5,7 +5,7 @@ from src.exceptions import smt_compile_errors, smt_solver_errors, \
                             smt_unsat, smt_unknown
 from src.result import Result
 
-def pysmt_solve(statement, solver_name='z3'):
+def pysmt_solve(statement, solver_name, args):
     smt_parser = SmtLibParser()
     smt_parser.env.enable_div_by_0 = False
     script = smt_parser.get_script(StringIO(statement))  
@@ -14,7 +14,7 @@ def pysmt_solve(statement, solver_name='z3'):
         with Opt(name=solver_name) as opt:
             logs = script.evaluate(opt)
     except smt_compile_errors as e:
-        return Result.EXCEPT, "smt compilation failed: {e}"
+        return Result.EXCEPT, f"smt compilation failed: {e}"
     except smt_solver_errors as e:
         return Result.EXCEPT, f"solver {solver_name} error: {e}"
     except smt_unsat:

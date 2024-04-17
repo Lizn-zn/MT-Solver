@@ -408,7 +408,7 @@ def globalize(func):
     return result
 
 
-def sympy_solve(statement, solver_name='sysol'):
+def sympy_solve(statement, solver_name, args):
     s = sym_solver()
     s.compile(statement) 
     if solver_name == "sysol":
