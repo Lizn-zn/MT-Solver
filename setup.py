@@ -22,6 +22,9 @@ setup(
     ],
 
     packages=find_packages(),
+    package_data={
+        'bottema': ['Bottema/bottema.mpl'], 
+    },
     entry_points={  
         'console_scripts': [
             'mtsolve=src.foo:main',
