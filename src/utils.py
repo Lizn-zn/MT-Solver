@@ -40,6 +40,8 @@ def normalize(args, solver_name):
 def wrap_exec(cmd, args, timeout, pid_mgr):
     """ wrap the execution of command with timeout """
     process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setpgrp)
-    pid_mgr.append(os.getpgid(process.pid))
+    pid = os.getpgid(process.pid)
+    pid_mgr.append(pid)
     stdout_, stderr_ = process.communicate(args.encode(), timeout=timeout)
+    pid_mgr.remove(pid) # if execute successfully, remove it from pid_mgr
     return stdout_.decode("utf-8"), stderr_.decode("utf-8")
