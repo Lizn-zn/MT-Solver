@@ -27,7 +27,9 @@ class maple_compiler:
         raise NotImplementedError('Unsupport command declare-fun')
 
     def define_fun(self, name, vars, rtype, expr):
-        """ Define a function for solving """
+        """ Define a function for solving 
+            This is not needed for maple
+        """
         self.funs.append(f"{name} := {expr.serialize(printer=MaplePrinter)}")
 
     def define_fun_rec(self, name, vars, type, expr, recur_iter=10):
@@ -90,11 +92,10 @@ class maple_solver(maple_compiler):
         """ solve and parse the result 
         """
         exec_cmd = 'maple'
-        func_cmd = ';'.join(self.funs)
-        polys = "[" + ",".join([f"[{expr}]" for expr in self.exprs]) + "]"
-        vars = "[" + ",".join([f"{var['name']}" for var in self.vars]) + "]"
-        prove_cmd = f'prove({polys}, {vars})'
-        exec_args = f'interface(prettyprint=0): read "./src/Bottema/prove.mpl": {func_cmd}; {prove_cmd};'
+        polynomials = "[" + ",".join([f"[{expr}]" for expr in self.exprs]) + "]"
+        variables = "[" + ",".join([f"{var['name']}" for var in self.vars]) + "]"
+        prove_cmd = f'prove({polynomials}, {variables})'
+        exec_args = f'interface(prettyprint=0): read "./src/Bottema/prove.mpl": {prove_cmd};'
         timeout = int(args.get("timeout", 30))
         output, error = wrap_exec(exec_cmd, exec_args, timeout, pid_mgr)
         start_marker, end_marker = exec_args, '> quit'
@@ -108,7 +109,8 @@ class maple_solver(maple_compiler):
             if res != "": 
                 return Result.SAT, res
             else:   
-                return Result.EXCEPT, error
+                print(output + error)
+                return Result.EXCEPT, output+error
         
 def maple_solve(statement, solver_name, args, pid_mgr):
     s = maple_solver()

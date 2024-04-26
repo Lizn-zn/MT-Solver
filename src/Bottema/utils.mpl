@@ -20,3 +20,23 @@ andSplit := proc(expr)
     fi;
     return terms;
 end proc:
+
+anySplit := proc(expr)
+    local flag, term, terms, temp;
+    flag := true;
+    terms := [expr];
+    while flag do 
+        temp := [];
+        flag := false;
+        for term in terms do
+            if has(term, `&and`) or has(term, `&or`) or has(term, `&not`) then
+                temp := [op(temp), op(term)];
+                flag := true;
+            else
+                temp := [op(temp), term];
+            fi;
+        od;
+        terms := temp;
+    od;
+    return terms;
+end proc:
