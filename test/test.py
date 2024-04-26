@@ -13,11 +13,13 @@ for filename in os.listdir('./test/cases'):
         statements[int(filename[:-4])] = content
 idxs = sorted(statements)
 
-solvers = {"z3": {"timeout":10}, "cvc5": {"timeout":10}, "msat": {"timeout":10}, "bottema": {"timeout":10}}
+solvers = {"z3": {"timeout":10}, "cvc5": {"timeout":10}, "msat": {"timeout":10}, "mplrc": {"timeout":10}}
 result_types = [Result.SAT, Result.UNSAT, Result.UNKNOWN, Result.TIMEOUT, Result.EXCEPT]
 stats = {solver: {result: 0 for result in result_types} for solver in solvers}
 
 for idx in idxs:
+    if idx > 20:
+         break
     output = ""
     for s in solvers:
         res, msg = solve(statements[idx], {s: solvers[s]})

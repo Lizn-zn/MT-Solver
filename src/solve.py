@@ -1,6 +1,6 @@
 from src.smt_solve import pysmt_solve
 from src.sym_solve import sympy_solve
-from src.maple_solve import bottema_solve
+from src.maple_solve import maple_solve
 from src.utils import *
 from src.result import Result
 from src.exceptions import timeout_errors
@@ -31,8 +31,8 @@ def solve(statement, solvers):
             if s in ["sysol", "syopt"]:
                 tmp_solver = pool.apply_async(sympy_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
-            if s in ["bottema"]:
-                tmp_solver = pool.apply_async(bottema_solve, (statement, s, solvers[s], pid_mgr))
+            if s in ["mplrc"]:
+                tmp_solver = pool.apply_async(maple_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
         for s in solvers:
             try:
