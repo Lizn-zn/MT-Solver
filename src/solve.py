@@ -31,7 +31,7 @@ def solve(statement, solvers):
             if s in ["sysol", "syopt"]:
                 tmp_solver = pool.apply_async(sympy_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
-            if s in ["mplrc"]:
+            if s in ["mplrc", "mplbt"]:
                 tmp_solver = pool.apply_async(maple_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
         for s in solvers:

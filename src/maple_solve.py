@@ -88,17 +88,19 @@ class maple_solver(maple_compiler):
     def reset(self):
         self.solutions = []
     
-    def solve(self, args, pid_mgr):
+    def solve(self, args, solver_name, pid_mgr):
         """ solve and parse the result 
         """
-        exec_cmd = 'maple'
+        if solver_name == 'mplrc':
+            file_path = "./src/mplcode/rcprove.mpl"
+        elif solver_name == 'mplbt':
+            file_path = "./src/mplcode/btprove.mpl"
         polynomials = "[" + ",".join([f"[{expr}]" for expr in self.exprs]) + "]"
         variables = "[" + ",".join([f"{var['name']}" for var in self.vars]) + "]"
         prove_cmd = f'prove({polynomials}, {variables})'
-        print(prove_cmd)
-        exec_args = f'interface(prettyprint=0): read "./src/mplcode/rcprove.mpl": {prove_cmd};'
+        exec_args = f'interface(printbytes=false, prettyprint=0): read "{file_path}": {prove_cmd};'
         timeout = int(args.get("timeout", 30))
-        output, error = wrap_exec(exec_cmd, exec_args, timeout, pid_mgr)
+        output, error = wrap_exec('maple', exec_args, timeout, pid_mgr)
         start_marker, end_marker = exec_args, '> quit'
         output = parse_string(output, start_marker, end_marker)
         if "The inequality holds." in output:
@@ -110,7 +112,8 @@ class maple_solver(maple_compiler):
             if res != "": 
                 return Result.SAT, res
             else:   
-                print(output + error)
+                print(exec_args)
+                print(output+error)
                 return Result.EXCEPT, output+error
         
 def maple_solve(statement, solver_name, args, pid_mgr):
@@ -119,7 +122,7 @@ def maple_solve(statement, solver_name, args, pid_mgr):
         s.compile(statement) 
     except maple_compile_errors as e:
         return Result.EXCEPT, f"maple compilation failed: {e}"
-    res = s.solve(args, pid_mgr)
+    res = s.solve(args, solver_name, pid_mgr)
     return res
 
             
