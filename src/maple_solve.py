@@ -112,8 +112,8 @@ class maple_solver(maple_compiler):
             if res != "": 
                 return Result.SAT, res
             else:   
-                print(exec_args)
-                print(output+error)
+                # print(exec_args)
+                # print(output+error)
                 return Result.EXCEPT, output+error
         
 def maple_solve(statement, solver_name, args, pid_mgr):

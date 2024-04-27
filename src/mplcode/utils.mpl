@@ -205,5 +205,3 @@ sample := proc(ineqs, vars)
     fi;
     error(`Some error occurs`);
 end proc:
-
-# EOC of qe
