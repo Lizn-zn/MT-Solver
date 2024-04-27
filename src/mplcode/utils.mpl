@@ -119,7 +119,6 @@ qe := proc(ineqs):
     return sys;
 end proc:
 
-
 preprocess := proc(ineqs):
     # preprocess the input ineqs
     local neq, f; 
@@ -206,3 +205,5 @@ sample := proc(ineqs, vars)
     fi;
     error(`Some error occurs`);
 end proc:
+
+# EOC of qe

@@ -18,8 +18,6 @@ result_types = [Result.SAT, Result.UNSAT, Result.UNKNOWN, Result.TIMEOUT, Result
 stats = {solver: {result: 0 for result in result_types} for solver in solvers}
 
 for idx in idxs:
-    if idx > 20:
-        break
     output = ""
     for s in solvers:
         res, msg = solve(statements[idx], {s: solvers[s]})
