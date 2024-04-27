@@ -13,17 +13,15 @@ for filename in os.listdir('./test/cases'):
         statements[int(filename[:-4])] = content
 idxs = sorted(statements)
 
-solvers = {"z3": {"timeout":10}, "cvc5": {"timeout":10}, "msat": {"timeout":10}, "mplrc": {"timeout":10}}
+solvers = {"z3": {"timeout":10}, "cvc5": {"timeout":10}, "msat": {"timeout":10}, "mplrc": {"timeout":10}, "mplbt": {"timeout":10}}
 result_types = [Result.SAT, Result.UNSAT, Result.UNKNOWN, Result.TIMEOUT, Result.EXCEPT]
 stats = {solver: {result: 0 for result in result_types} for solver in solvers}
 
 for idx in idxs:
-    if idx <= 20:
-        continue
     output = ""
     for s in solvers:
         res, msg = solve(statements[idx], {s: solvers[s]})
-        output += "\n | {:<8}: {:<12} {:<15}".format(s, res, msg)
+        output += "\n | {:<8}: {:<12} {:<24}".format(s, res, msg)
         stats[s][res] += 1
     print("Start test case {:<3} ...".format(idx) + output)
     print('-' * 50) 
