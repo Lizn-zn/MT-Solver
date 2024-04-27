@@ -95,7 +95,8 @@ class maple_solver(maple_compiler):
         polynomials = "[" + ",".join([f"[{expr}]" for expr in self.exprs]) + "]"
         variables = "[" + ",".join([f"{var['name']}" for var in self.vars]) + "]"
         prove_cmd = f'prove({polynomials}, {variables})'
-        exec_args = f'interface(prettyprint=0): read "./src/Bottema/prove.mpl": {prove_cmd};'
+        print(prove_cmd)
+        exec_args = f'interface(prettyprint=0): read "./src/mplcode/rcprove.mpl": {prove_cmd};'
         timeout = int(args.get("timeout", 30))
         output, error = wrap_exec(exec_cmd, exec_args, timeout, pid_mgr)
         start_marker, end_marker = exec_args, '> quit'
