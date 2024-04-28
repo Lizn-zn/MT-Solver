@@ -81,5 +81,3 @@ prove := proc(ineqs, vars)
 end proc:
 
 # EOC of prove
-
-prove([[(0 < a)],[(0 < b)],[(0 < c)],[(0 < d)],[&not((((a / (a + b + d)) + (b / (b + c + a)) + (c / (c + d + b)) + (d / (d + a + c))) < 2))]], [a,b,c,d]);

@@ -22,9 +22,6 @@ setup(
     ],
 
     packages=find_packages(),  
-    package_data={
-        'mplcode': ['*.mpl'],  
-    },
     include_package_data=True,
     
     entry_points={  
