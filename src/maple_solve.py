@@ -84,21 +84,29 @@ class maple_solver(maple_compiler):
         """ hyper-parameters setting
         """
         maple_compiler.__init__(self)
+        dir_path = os.path.dirname(__file__)
+        self.mpl_utils = os.path.join(dir_path, "./mplcode/utils.mpl")
+        self.mpl_rcprover = os.path.join(dir_path, "./mplcode/rcprove.mpl")
+        self.mpl_btprover = os.path.join(dir_path, "./mplcode/btprove.mpl")
+        self.mpl_bottema = os.path.join(dir_path, "./mplcode/bottema.mpl")
         
     def reset(self):
         self.solutions = []
     
     def solve(self, args, solver_name, pid_mgr):
         """ solve and parse the result 
-        """
-        if solver_name == 'mplrc':
-            file_path = "./src/mplcode/rcprove.mpl"
-        elif solver_name == 'mplbt':
-            file_path = "./src/mplcode/btprove.mpl"
+        """        
+        # for mpl setting to mute some prints
+        settings = "interface(printbytes=false, prettyprint=0):"
+        # prover selection
+        if solver_name == "mplrc":
+            inits = f'read "{self.mpl_utils}": read "{self.mpl_rcprover}":'
+        elif solver_name == "mplbt":
+            inits = f'read "{self.mpl_utils}": read "{self.mpl_bottema}": read "{self.mpl_btprover}":'
         polynomials = "[" + ",".join([f"[{expr}]" for expr in self.exprs]) + "]"
         variables = "[" + ",".join([f"{var['name']}" for var in self.vars]) + "]"
-        prove_cmd = f'prove({polynomials}, {variables})'
-        exec_args = f'interface(printbytes=false, prettyprint=0): read "{file_path}": {prove_cmd};'
+        prove_cmd = f'prove({polynomials}, {variables});'
+        exec_args = f'{settings} {inits} {prove_cmd}'
         timeout = int(args.get("timeout", 30))
         output, error = wrap_exec('maple', exec_args, timeout, pid_mgr)
         start_marker, end_marker = exec_args, '> quit'

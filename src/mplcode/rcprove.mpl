@@ -8,10 +8,6 @@
 ###########################################
 *)
 
-with(RegularChains):
-with(SemiAlgebraicSetTools):
-read("./src/mplcode/utils.mpl"):
-
 prove := proc(ineqs, vars)
     local newEqs, preRes;
     newEqs := preprocess(ineqs);
