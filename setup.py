@@ -21,10 +21,12 @@ setup(
         "cvc5"
     ],
 
-    packages=find_packages(),
+    packages=find_packages(),  
     package_data={
-        'bottema': ['Bottema/bottema.mpl'], 
+        'mplcode': ['*.mpl'],  
     },
+    include_package_data=True,
+    
     entry_points={  
         'console_scripts': [
             'mtsolve=src.foo:main',

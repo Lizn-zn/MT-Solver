@@ -1,7 +1,8 @@
 (*
 # The following funs are utils for proving
 *)
-
+with(RegularChains):
+with(SemiAlgebraicSetTools):
 (*
 orSplit splits the expr into a list of terms
 *)

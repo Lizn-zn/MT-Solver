@@ -13,12 +13,6 @@
     # prove([[(((a ^ 2) + (b ^ 2)) = (2 * a * b))],[ &not(((2 * (a ^ 2) * (b ^ 3)) <= ((a ^ 2) + (b ^ 6))))]], [b,a]);
 ###########################################
 *)
-
-with(RegularChains):
-with(SemiAlgebraicSetTools):
-read("./src/mplcode/utils.mpl"):
-read("./src/mplcode/bottema.mpl"):
-
 prove := proc(ineqs, vars)
     local newEqs, preRes, goal;
     goal := ineqs[nops(ineqs)];
