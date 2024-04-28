@@ -61,7 +61,8 @@ anySplit := proc(expr)
         temp := [];
         flag := false;
         for term in terms do
-            if op(0, term) = `&and` or op(0, term) = `&or` or op(0, term) = `&not` then
+            if op(0, term) = `&and` or op(0, term) = `&or` or op(0, term) = `&not` 
+            or op(0, term) = `&iff` or op(0, term) = `&implies` then
                 temp := [op(temp), op(term)];
                 flag := true;
             else
