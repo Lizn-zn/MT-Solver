@@ -43,9 +43,14 @@ prove := proc(ineqs, vars)
         fi;
     od;
     local gLhs, gRhs, cons;
+    cons := [];
+    for s in sys[1..nops(sys)-1] do
+        cons := [op(cons), op(andSplit(s))];  
+    od;  
     goal := sys[nops(sys)];
-    cons := sys[1..nops(sys)-1];
-    if has(goal, `&not`) then
+    if has(goal, `&and`) or has(goal, `&or`) then
+        error(`The proof goal should not contain logical &and or logical &or`);
+    elif has(goal, `&not`) then
         goal := op(goal);
         gLhs := lhs(goal); # reverse them
         gRhs := rhs(goal);
@@ -82,5 +87,3 @@ prove := proc(ineqs, vars)
 end proc:
 
 # EOC of prove
-
-# prove([[(0 < a)],[(0 < m)],[(0 < c)],[((a + m + c) = 12)],[&not((((a * m * c) + (a * m) + (m * c) + (a * c)) < 112))]], [a,m,c]);

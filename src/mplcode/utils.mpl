@@ -6,12 +6,22 @@
 orSplit splits the expr into a list of terms
 *)
 orSplit := proc(expr)
-    local terms;
-    if has(expr, `&or`) then
-        terms := [op(expr)];
-    else
-        terms := [expr];
-    fi;
+    local flag, term, terms, temp;
+    flag := true;
+    terms := [expr];
+    while flag do 
+        temp := [];
+        flag := false;
+        for term in terms do
+            if op(0, term) = `&or` then
+                temp := [op(temp), op(term)];
+                flag := true;
+            else
+                temp := [op(temp), term];
+            fi;
+        od;
+        terms := temp;
+    od;
     return terms;
 end proc:
 
@@ -19,14 +29,25 @@ end proc:
 andSplit splits the expr into a list of terms
 *)
 andSplit := proc(expr)
-    local terms;
-    if has(expr, `&and`) then
-        terms := [op(expr)];
-    else
-        terms := [expr];
-    fi;
+    local flag, term, terms, temp;
+    flag := true;
+    terms := [expr];
+    while flag do 
+        temp := [];
+        flag := false;
+        for term in terms do
+            if op(0, term) = `&and` then
+                temp := [op(temp), op(term)];
+                flag := true;
+            else
+                temp := [op(temp), term];
+            fi;
+        od;
+        terms := temp;
+    od;
     return terms;
 end proc:
+
 
 (*
 anySplit splits any logical connectives in the expr
@@ -39,7 +60,7 @@ anySplit := proc(expr)
         temp := [];
         flag := false;
         for term in terms do
-            if has(term, `&and`) or has(term, `&or`) or has(term, `&not`) then
+            if op(0, term) = `&and` or op(0, term) = `&or` or op(0, term) = `&not` then
                 temp := [op(temp), op(term)];
                 flag := true;
             else
