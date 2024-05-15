@@ -70,8 +70,9 @@ prove := proc(ineqs, vars)
         elif res = false then
             print(`The inequality does not hold.`);
         fi;
-    elif type(goal, `=`) then
-        goal := (gLhs-gRhs) = 0;
+    elif type(goal, `=`) then 
+        # check feasibility of goal != 0
+        goal := (gLhs-gRhs) <> 0;
         newEqs := [goal, op(cons)];
         sample(newEqs, vars); 
     else
