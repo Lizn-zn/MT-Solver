@@ -7,7 +7,7 @@ setup(
     description='An integration of model theory solvers',  
     
     long_description=open('README.md').read(),  
-    long_description_content_type='text/markdown',  # 指定长描述的格式，这里是Markdown
+    long_description_content_type='text/markdown',  
     
     url='',      
     author='',
