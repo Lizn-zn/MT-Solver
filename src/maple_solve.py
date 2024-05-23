@@ -79,6 +79,7 @@ class maple_compiler:
             elif cmd.name == "get-model":
                 self.target_vars = self.vars
 
+
 class maple_solver(maple_compiler):
     def __init__(self):
         """ hyper-parameters setting
@@ -89,13 +90,19 @@ class maple_solver(maple_compiler):
         self.mpl_rcprover = os.path.join(dir_path, "./mplcode/rcprove.mpl")
         self.mpl_btprover = os.path.join(dir_path, "./mplcode/btprove.mpl")
         self.mpl_bottema = os.path.join(dir_path, "./mplcode/bottema.mpl")
+        # self.mpl_rcprove_proj = os.path.join(dir_path, "./mplcode/rcprove_proj.mpl")
+        
         
     def reset(self):
         self.solutions = []
     
-    def solve(self, args, solver_name, pid_mgr):
+    def select_var(polys, vars):
+        pass
+    
+    def solve(self, args, solver_name, pid_mgr, selected_var=None):
         """ solve and parse the result 
         """        
+        
         # for mpl setting to mute some prints
         settings = "interface(printbytes=false, prettyprint=0):"
         # prover selection
@@ -103,6 +110,8 @@ class maple_solver(maple_compiler):
             inits = f'read "{self.mpl_utils}": read "{self.mpl_rcprover}":'
         elif solver_name == "mplbt":
             inits = f'read "{self.mpl_utils}": read "{self.mpl_bottema}": read "{self.mpl_btprover}":'
+        elif solver_name == "mplproj": #TODO
+            inits = f'read "{self.mpl_utils}": read "{self.mpl_rcprove_proj}":'
         polynomials = "[" + ",".join([f"[{expr}]" for expr in self.exprs]) + "]"
         variables = "[" + ",".join([f"{var['name']}" for var in self.vars]) + "]"
         prove_cmd = f'prove({polynomials}, {variables});'
@@ -110,7 +119,9 @@ class maple_solver(maple_compiler):
 
         timeout = int(args.get("timeout", 30))
         output, error = wrap_exec('maple', exec_args, timeout, pid_mgr)
+        print(output)
         start_marker, end_marker = exec_args, '> quit'
+        proj_flag = ''
         output = parse_string(output, start_marker, end_marker)
         if "The inequality holds." in output:
             return Result.UNSAT, "no counter example exists"

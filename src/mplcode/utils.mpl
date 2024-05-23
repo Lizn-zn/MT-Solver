@@ -3,6 +3,7 @@
 *)
 with(RegularChains):
 with(SemiAlgebraicSetTools):
+with(ConstructibleSetTools):
 (*
 orSplit splits the expr into a list of terms
 *)
@@ -227,4 +228,48 @@ sample := proc(ineqs, vars)
         return; 
     fi;
     error(`Some error occurs`);
+end proc:
+
+
+extractPolynomials := proc(expr)
+    local polys, extract;
+    polys := [];
+
+    # recursively extract polys
+    extract := proc(e)
+        local sub_expr;
+        if type(e, 'relation') then
+            # convert relation exprs to a list of polys
+            polys := [op(polys), lhs(e) - rhs(e)];
+        elif type(e, 'function') and op(0, e) in {`and`, `or`, `not`, `&and`, `&or`, `&not`} then
+            # recursively extract sub-exprs
+            for sub_expr in [op(e)] do
+                extract(sub_expr);
+            end do;
+        elif type(e, 'list') or type(e, 'set') then
+            # recursively extract sub-terms
+            for sub_expr in e do
+                extract(sub_expr);
+            end do;
+        end if;
+    end proc;
+
+    # start extraction
+    extract(expr);
+
+    return polys;
+end proc:
+
+
+extractProjectionPolynomials := proc(projectionResult)
+    local polys, i, sublist;
+
+    polys := [];
+
+    for i to nops(projectionResult) do
+        sublist := projectionResult[i][1];  # obtain poly from each list
+        polys := [op(polys), op(sublist)];  # add polys to the result list
+    end do;
+
+    return polys;
 end proc:

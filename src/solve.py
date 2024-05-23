@@ -1,10 +1,16 @@
 from src.smt_solve import pysmt_solve
 from src.sym_solve import sympy_solve
 from src.maple_solve import maple_solve
+# from src.maple_proj import maple_solve
 from src.utils import *
 from src.result import Result
 from src.exceptions import timeout_errors
 from multiprocessing import Pool, Manager
+import logging
+
+# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+# logger = logging.getLogger('my_app')
+# logger.setLevel(logging.DEBUG)
 
 def solve(statement, solvers):
     """ integrated solving function
@@ -31,13 +37,18 @@ def solve(statement, solvers):
             if s in ["sysol", "syopt"]:
                 tmp_solver = pool.apply_async(sympy_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
-            if s in ["mplrc", "mplbt"]:
+            if s in ["mplrc", "mplbt", "mplproj"]:
                 tmp_solver = pool.apply_async(maple_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
+                # logger.debug(future_res)
+            # if s in ["mplproj"]:
+            #     tmp_solver = pool.apply_async(maple_solve, (statement, s, solvers[s], pid_mgr))
+            #     future_res[s] = tmp_solver
         for s in solvers:
             try:
                 timeout = int(solvers[s].get("timeout", 30))
                 res, msg = future_res[s].get(timeout)
+                print(res)
             except timeout_errors:
                 res, msg = Result.TIMEOUT, "solve timeout"
             solver_res[s] = res

@@ -3,6 +3,7 @@ import shlex
 import os
 import signal
 import subprocess
+import random
 
 def parse_args(arg_str):
     """ parse args in string format into dict """
@@ -45,3 +46,15 @@ def wrap_exec(cmd, args, timeout, pid_mgr):
     stdout_, stderr_ = process.communicate(args.encode(), timeout=timeout)
     pid_mgr.remove(pid) # if execute successfully, remove it from pid_mgr
     return stdout_.decode("utf-8"), stderr_.decode("utf-8")
+
+
+def predict_next(polys, vars):
+    """select the next variable for projection(random version currently)"""
+    # TODO: combine with RL prediction model.
+    selected_var = random.choice(vars)
+    vars.remove(selected_var)
+    vars.extend(selected_var)
+    final_str = '[' + ','.join(vars) + ']'
+    return final_str
+    
+    

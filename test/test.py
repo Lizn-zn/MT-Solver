@@ -5,6 +5,7 @@ from src.solve import solve
 from src.result import Result
 
 statements = {}
+
 for filename in os.listdir('./test/cases'):
     if filename.endswith(".smt"):
         filepath = os.path.join('./test/cases', filename)
@@ -13,14 +14,17 @@ for filename in os.listdir('./test/cases'):
         statements[int(filename[:-4])] = content
 idxs = sorted(statements)
 
-solvers = {"z3": {"timeout":10}, "cvc5": {"timeout":10}, "msat": {"timeout":10}, "mplrc": {"timeout":10}, "mplbt": {"timeout":10}}
+# solvers = {"z3": {"timeout":10}, "cvc5": {"timeout":10}, "msat": {"timeout":10}, "mplrc": {"timeout":10}, "mplbt": {"timeout":10}}
+solvers = {"mplrc": {"timeout":10}}
 result_types = [Result.SAT, Result.UNSAT, Result.UNKNOWN, Result.TIMEOUT, Result.EXCEPT]
 stats = {solver: {result: 0 for result in result_types} for solver in solvers}
 
 for idx in idxs:
     output = ""
     for s in solvers:
+        # print(s)
         res, msg = solve(statements[idx], {s: solvers[s]})
+        # print(res)
         output += "\n | {:<8}: {:<12} {:<24}".format(s, res, msg)
         stats[s][res] += 1
     print("Start test case {:<3} ...".format(idx) + output)

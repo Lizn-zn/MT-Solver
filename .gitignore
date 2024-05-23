@@ -2,3 +2,6 @@ build/*
 MT_Solver.egg-info/*
 src/MT_Solver.egg-info/*
 *.pyc
+
+maple_proj.py
+src/mplcode/rcprove_proj.mpl
