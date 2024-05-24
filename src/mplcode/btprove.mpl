@@ -47,7 +47,8 @@ prove := proc(ineqs, vars)
         error(`The proof goal should not contain logical &and or logical &or`);
     elif op(0, goal) = `&not` then
         goal := op(goal);
-        gLhs := lhs(goal); # reverse them
+        # reverse them
+        gLhs := lhs(goal); 
         gRhs := rhs(goal);
     else
         error(`the last assertion should be the goal and expressed in &not format`);
@@ -55,6 +56,7 @@ prove := proc(ineqs, vars)
     local relop, res;
     relop = op(0, goal);
     if relop = `<=` then
+        # yprove does not need negation
         goal := (gLhs-gRhs) <= 0;
         res := yprove(goal, cons);
         if res = true then
@@ -63,6 +65,9 @@ prove := proc(ineqs, vars)
             print(`The inequality does not hold.`);
         fi;
     elif relop = `<` then
+        # < is converted by <= and <> 
+        # where <= is proved by yprove, which does not need negation, 
+        # but (gLhs-gRhs) <> 0 is negated, and checked by sample
         goal := (gLhs-gRhs) <= 0;
         res := yprove(goal, cons);
         if res = true then           
@@ -73,8 +78,13 @@ prove := proc(ineqs, vars)
             print(`The inequality does not hold.`);
         fi;
     elif relop = `=` then 
-        # check feasibility of goal != 0
+        # check feasibility of negated goal (!= 0) using sample
         goal := (gLhs-gRhs) <> 0;
+        newEqs := [goal, op(cons)];
+        sample(newEqs, vars); 
+    elif relop = `<>` then
+        # check feasibility of negated goal (= 0) using sample
+        goal := (gLhs-gRhs) = 0;
         newEqs := [goal, op(cons)];
         sample(newEqs, vars); 
     else
