@@ -177,6 +177,8 @@ preprocess := proc(ineqs):
                 fNew := subs(t1=(t2<=0), fNew);
             elif relop = `=` then
                 fNew := subs(t1=(t2=0), fNew);
+            elif relop = `<>` then
+                fNew := subs(t1=(t2<>0), fNew);
             else:
                 error(`Invalid formula`, f);
             fi;
