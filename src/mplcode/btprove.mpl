@@ -16,7 +16,8 @@
 prove := proc(ineqs, vars)
     local newEqs, preRes, goal;
     goal := ineqs[nops(ineqs)];
-    # if we must use samplepoint, then preprocess
+    # if '<' and '=' in the goal, we should must use samplepoint 
+    #                              as an additional checker for bottema, then preprocess
     # else, we avoid the preprocessing
     if hastype(goal, `<`) or hastype(goal, `=`) then
         newEqs := preprocess(ineqs);
@@ -44,15 +45,16 @@ prove := proc(ineqs, vars)
     goal := sys[nops(sys)];
     if has(goal, `&and`) or has(goal, `&or`) then
         error(`The proof goal should not contain logical &and or logical &or`);
-    elif has(goal, `&not`) then
+    elif op(0, goal) = `&not` then
         goal := op(goal);
         gLhs := lhs(goal); # reverse them
         gRhs := rhs(goal);
     else
         error(`the last assertion should be the goal and expressed in &not format`);
     fi;
-    local res;
-    if hastype(goal, `<=`) then
+    local relop, res;
+    relop = op(0, goal);
+    if relop = `<=` then
         goal := (gLhs-gRhs) <= 0;
         res := yprove(goal, cons);
         if res = true then
@@ -60,7 +62,7 @@ prove := proc(ineqs, vars)
         else:
             print(`The inequality does not hold.`);
         fi;
-    elif hastype(goal, `<`) then
+    elif relop = `<` then
         goal := (gLhs-gRhs) <= 0;
         res := yprove(goal, cons);
         if res = true then           
@@ -70,7 +72,7 @@ prove := proc(ineqs, vars)
         elif res = false then
             print(`The inequality does not hold.`);
         fi;
-    elif type(goal, `=`) then 
+    elif relop = `=` then 
         # check feasibility of goal != 0
         goal := (gLhs-gRhs) <> 0;
         newEqs := [goal, op(cons)];
