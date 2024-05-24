@@ -162,15 +162,20 @@ preprocess := proc(ineqs):
         fNew := f;
         for t1 in anySplit(f) do
             t2 := lhs(t1) - rhs(t1);
-            # handle the fraction
+            ####
+            # handle the fraction using a/b <= 0 -> a*b <= 0
             t2 := fracElim(t2);
-            # handle the radical
+            # EOC of handle the fraction
+            ####
+            # handle the radical using a^1/k <= 0 -> exist aux, aux <= 0 &and aux^k = a
             t2, auxIneqs, auxVars := radElim(t2);
-            if hastype(t1, `<`) then
+            local relop;
+            relop = op(0, t1);
+            if relop = `<` then
                 fNew := subs(t1=(t2<0), fNew);
-            elif hastype(t1, `<=`) then
+            elif relop = `<=` then
                 fNew := subs(t1=(t2<=0), fNew);
-            elif hastype(t1, `=`) then
+            elif relop = `=` then
                 fNew := subs(t1=(t2=0), fNew);
             else:
                 error(`Invalid formula`, f);
@@ -204,6 +209,7 @@ preprocess := proc(ineqs):
                     fi;
                 fi;
             fi;
+            # EOC of handle the radical
         od;
         newIneqs := [op(newIneqs), neq];
     od;
