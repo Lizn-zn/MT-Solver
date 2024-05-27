@@ -170,7 +170,7 @@ preprocess := proc(ineqs):
             # handle the radical using a^1/k <= 0 -> exist aux, aux <= 0 &and aux^k = a
             t2, auxIneqs, auxVars := radElim(t2);
             local relop;
-            relop = op(0, t1);
+            relop := op(0, t1);
             if relop = `<` then
                 fNew := subs(t1=(t2<0), fNew);
             elif relop = `<=` then
