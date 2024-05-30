@@ -80,7 +80,7 @@ radElim to eliminate radical using a^1/k <= 0 -> aux <= 0 &and aux^k = a
 radElim := proc(expr)
     local rootList, r, rules; 
     local newExpr, newVars, newCons, id;
-    local base, expDenom, expNumer;
+    local base, baseDenom, baseNumer, expDenom, expNumer;
     newVars := [];
     newCons := [];
     rules := [];
@@ -94,7 +94,10 @@ radElim := proc(expr)
         if type(expDenom, even) then
             newCons := [op(newCons), newVars[id] >= 0];
         fi;
-        newCons := [op(newCons), newVars[id]^expDenom = base^expNumer];
+        # handle the fraction
+        baseDenom := denom(base);
+        baseNumer := numer(base);
+        newCons := [op(newCons), newVars[id]^expDenom*baseDenom^expNumer = baseNumer^expNumer];
         rules := [op(rules), rootList[id] = newVars[id]];
         id := id + 1;
     od;

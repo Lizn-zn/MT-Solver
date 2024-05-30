@@ -54,7 +54,7 @@ prove := proc(ineqs, vars)
         error(`the last assertion should be the goal and expressed in &not format`);
     fi;
     local relop, res;
-    relop = op(0, goal);
+    relop := op(0, goal);
     if relop = `<=` then
         # yprove does not need negation
         goal := (gLhs-gRhs) <= 0;
@@ -88,7 +88,7 @@ prove := proc(ineqs, vars)
         newEqs := [goal, op(cons)];
         sample(newEqs, vars); 
     else
-        error(`Invalid formula`, goal);
+        error(`Invalid formula`, goal, relop);
     fi;
     return;
 end proc:
