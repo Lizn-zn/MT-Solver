@@ -165,6 +165,7 @@ preprocess := proc(ineqs):
         fNew := f;
         for t1 in anySplit(f) do
             t2 := lhs(t1) - rhs(t1);
+            t2 := normal(t2);
             ####
             # handle the fraction using a/b <= 0 -> a*b <= 0
             t2 := fracElim(t2);

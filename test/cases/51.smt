@@ -7,3 +7,4 @@
 (assert (not (>= (+ (+ (/ a b) (/ b c)) (/ c a)) (sqrt (/ (+ (^ a 2) 1) (+ (^ b 2) 1))))))
 (check-sat)
 (get-model)
+(exit)
