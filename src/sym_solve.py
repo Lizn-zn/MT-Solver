@@ -138,16 +138,16 @@ class sym_compiler:
                              ((lhs-rhs)**2, And(lhs-rhs>-oo, lhs-rhs<oo)))
         elif rel_op == "<=":
             relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs<=0)), ((lhs-rhs)**2+self.check_tol, lhs-rhs>0))
+                             (0, (lhs-rhs<=0)), ((lhs-rhs)**2, lhs-rhs>0))
         elif rel_op == "<":
             relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs<=-self.check_tol)), ((lhs-rhs)**2+self.check_tol, lhs-rhs>-self.check_tol))
+                             (0, (lhs-rhs<=-self.check_tol)), ((lhs-rhs)**2+100, lhs-rhs>-self.check_tol))
         elif rel_op == ">=":
             relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs>=0)), ((lhs-rhs)**2+self.check_tol, lhs-rhs<0))
+                             (0, (lhs-rhs>=0)), ((lhs-rhs)**2, lhs-rhs<0))
         elif rel_op == ">":
             relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs>=self.check_tol)), ((lhs-rhs)**2+self.check_tol, lhs-rhs<self.check_tol))
+                             (0, (lhs-rhs>=self.check_tol)), ((lhs-rhs)**2+100, lhs-rhs<self.check_tol))
         return relu
         
     def parse_formula(self, formula, encoding=False):
@@ -342,6 +342,7 @@ class sym_solver(sym_compiler):
                 raise SolutionTypeError(f"the solution {res.x} is invalid")
         else:
             feasibility = res.fun
+        print(res)
         if feasibility < self.check_tol:
             final_sol = {}
             for id, var in enumerate(self.vars):
