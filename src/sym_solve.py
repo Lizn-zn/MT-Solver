@@ -293,22 +293,22 @@ class sym_solver(sym_compiler):
     def sympy_solve(self, statement=None):
         #### check-sat
         if len(self.vars) == 0: 
-            raise NoCompliationError("No vars to be solved, re-compile and check the statement")
+            return Result.EXCEPT, "No vars to be solved, re-compile and check the statement"
         if len(self.target_vars) == 0: 
-            raise IllegalGetValueCommand("Statment does not contain get-value or get-model")
+            return Result.EXCEPT, "Statment does not contain get-value or get-model"
         if self.obj:
-            raise InvalidProblemType("Infeasible due to the problem is optimization task")
+            return Result.EXCEPT, "Infeasible due to the problem is optimization task"
         else:
             try:
                 solutions = solve(self.exprs, [self.sympy_vars[key] for key in self.sympy_vars.keys()], dict=True)
             except (ValueError, TypeError, AttributeError, NotImplementedError) as e:
-                raise InvalidProblemType("sympy solve error, " + str(e))
+                return Result.EXCEPT, f"sympy solver fail due to that `{e}"
             check_res = self.type_check(solutions)
         #### get-value
         try:
             return Result.SAT, [check_res[str(var)] for var in self.target_vars]
         except KeyError as e:
-            raise IllegalGetValueCommand("sympy solver fail due to that get-value is not well-formed")
+            return Result.EXCEPT, "sympy solver fail due to that get-value is not well-formed"
 
     """ __summary__
         The following are the main functions for optimizing
@@ -316,9 +316,9 @@ class sym_solver(sym_compiler):
     def scipy_optim(self, statement=None):
         #### check-sat
         if len(self.vars) == 0: 
-            raise NoCompliationError("No vars to be solved, re-compile and check the statement")
+            return Result.EXCEPT, "No vars to be solved, re-compile and check the statement"
         if len(self.target_vars) == 0: 
-            raise IllegalGetValueCommand("Statment does not contain get-value or get-model")
+            return Result.EXCEPT, "Statment does not contain get-value or get-model"
         solutions = self.optimize()
         check_res = self.type_check(solutions)             
         #### get-value
@@ -326,9 +326,9 @@ class sym_solver(sym_compiler):
             if check_res != []:
                 return Result.SAT, [check_res[str(var)] for var in self.target_vars]
             else:
-                return Result.UNSAT, "no counter example exists"
+                return Result.UNKNOWN, "failed to find a feasible solution numerically"
         except KeyError as e:
-            raise IllegalGetValueCommand("sympy solver fail due to that get-value is not well-formed")
+            return Result.EXCEPT, "sympy solver fail due to that get-value is not well-formed"
     
     def check_feasibility(self, res):
         """ check the feasibility of the solution 
@@ -342,7 +342,6 @@ class sym_solver(sym_compiler):
                 raise SolutionTypeError(f"the solution {res.x} is invalid")
         else:
             feasibility = res.fun
-        print(res)
         if feasibility < self.check_tol:
             final_sol = {}
             for id, var in enumerate(self.vars):
