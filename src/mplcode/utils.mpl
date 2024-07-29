@@ -80,7 +80,7 @@ radElim to eliminate radical using a^1/k <= 0 -> aux <= 0 &and aux^k = a
 radElim := proc(expr)
     local rootList, r, rules; 
     local newExpr, newVars, newCons, id;
-    local base, expDenom, expNumer;
+    local base, baseDenom, baseNumer, expDenom, expNumer;
     newVars := [];
     newCons := [];
     rules := [];
@@ -94,7 +94,10 @@ radElim := proc(expr)
         if type(expDenom, even) then
             newCons := [op(newCons), newVars[id] >= 0];
         fi;
-        newCons := [op(newCons), newVars[id]^expDenom = base^expNumer];
+        # handle the fraction
+        baseDenom := denom(base);
+        baseNumer := numer(base);
+        newCons := [op(newCons), newVars[id]^expDenom*baseDenom^expNumer = baseNumer^expNumer];
         rules := [op(rules), rootList[id] = newVars[id]];
         id := id + 1;
     od;
@@ -162,6 +165,7 @@ preprocess := proc(ineqs):
         fNew := f;
         for t1 in anySplit(f) do
             t2 := lhs(t1) - rhs(t1);
+            t2 := normal(t2);
             ####
             # handle the fraction using a/b <= 0 -> a*b <= 0
             t2 := fracElim(t2);
@@ -170,7 +174,7 @@ preprocess := proc(ineqs):
             # handle the radical using a^1/k <= 0 -> exist aux, aux <= 0 &and aux^k = a
             t2, auxIneqs, auxVars := radElim(t2);
             local relop;
-            relop = op(0, t1);
+            relop := op(0, t1);
             if relop = `<` then
                 fNew := subs(t1=(t2<0), fNew);
             elif relop = `<=` then

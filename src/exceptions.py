@@ -77,7 +77,7 @@ class ScipyOptimError(SolveError):
     """Raised when the scipy optimizer fails"""
     pass
 
-smt_solver_errors = (Z3Exception, NoSolverAvailableError, InternalSolverError, ConvertExpressionError)
+smt_solver_errors = (Z3Exception, NoSolverAvailableError, InternalSolverError, ConvertExpressionError, RuntimeError)
 sympy_solve_errors = (SolutionTypeError, InvalidProblemType) # (TypeError, NotImplementedError, ValueError, IndexError, NotAlgebraic, NoConvergence, NotInvertible)
 scipy_solve_errors = (InfeasibleSolError, ScipyOptimError) # (TypeError, OverflowError, RuntimeError, ValueError, PysmtValueError, PysmtModeError, ZeroDivisionError, RecursionError)
 

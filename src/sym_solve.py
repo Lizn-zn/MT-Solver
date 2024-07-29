@@ -1,5 +1,6 @@
 from sympy import symbols, parse_expr, solve, lambdify, Function, Lambda
 from sympy import Piecewise, floor, binomial, isprime, factorial
+from sympy import reduce_inequalities, simplify
 from sympy import Eq, Le, Lt, asin, acos
 from sympy import Not, And, Or
 from sympy import nan, oo
@@ -10,6 +11,7 @@ from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import REAL, INT, BOOL
 from io import StringIO
 
+from src.result import Result
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
 
@@ -129,6 +131,24 @@ class sym_compiler:
         except (TypeError, SyntaxError, SympifyError) as e:
             raise FormulaParseError("sym formula complier failed in expression %s, due to %s" %(formula, e))
         return expr
+    
+    def encode_loss(self, lhs, rhs, rel_op):
+        if rel_op == "=":
+            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
+                             ((lhs-rhs)**2, And(lhs-rhs>-oo, lhs-rhs<oo)))
+        elif rel_op == "<=":
+            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
+                             (0, (lhs-rhs<=0)), ((lhs-rhs)**2, lhs-rhs>0))
+        elif rel_op == "<":
+            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
+                             (0, (lhs-rhs<=-self.check_tol)), ((lhs-rhs)**2+100, lhs-rhs>-self.check_tol))
+        elif rel_op == ">=":
+            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
+                             (0, (lhs-rhs>=0)), ((lhs-rhs)**2, lhs-rhs<0))
+        elif rel_op == ">":
+            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
+                             (0, (lhs-rhs>=self.check_tol)), ((lhs-rhs)**2+100, lhs-rhs<self.check_tol))
+        return relu
         
     def parse_formula(self, formula, encoding=False):
         """ Parse the formula into sympy format 
@@ -139,25 +159,22 @@ class sym_compiler:
             lhs, rhs = formula.args()
             lhs, rhs = self.parse(lhs.serialize()), self.parse(rhs.serialize())
             expr = Eq(lhs, rhs)
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             ((lhs-rhs)**2, And(lhs-rhs>-oo, lhs-rhs<oo)))
+            relu = self.encode_loss(lhs, rhs, "=")
         elif formula.is_not():
             expr = formula.args()[0]
             expr = self.parse(expr.serialize())
             expr = Not(expr)
-            relu = Piecewise((self.value_of_infinty, expr), (0, Not(expr)))
+            relu = self.encode_loss(expr.lhs, expr.rhs, expr.rel_op)
         elif formula.is_le():
             lhs, rhs = formula.args()
             lhs, rhs = self.parse(lhs.serialize()), self.parse(rhs.serialize())
             expr = Le(lhs, rhs)
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs<=0)), ((lhs-rhs)**2, lhs-rhs>0))
+            relu = self.encode_loss(lhs, rhs, "<=")
         elif formula.is_lt():
             lhs, rhs = formula.args()
             lhs, rhs = self.parse(lhs.serialize()), self.parse(rhs.serialize())
             expr = Lt(lhs, rhs)
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs<=-self.check_tol)), ((lhs-rhs)**2, lhs-rhs>-self.check_tol))
+            relu = self.encode_loss(lhs, rhs, "<")
         elif formula.is_and():
             """e.g. lhs = (0 <= final_ahmed); rhs = (final_ahmed <= 100)"""
             expr, relu = [], 0.0
@@ -226,7 +243,7 @@ class sym_compiler:
             elif cmd.name == "get-value":
                 self.target_vars = [arg for arg in cmd.args]
             elif cmd.name == "get-model":
-                self.target_vars = self.vars
+                self.target_vars = [var['name'] for var in self.vars]
                 
 class sym_solver(sym_compiler):
     def __init__(self):
@@ -247,7 +264,7 @@ class sym_solver(sym_compiler):
         if not isinstance(solutions, list): 
             raise SolutionTypeError(f"solution {solutions} is not well-formed")
         elif len(solutions) == 0:
-            raise SolutionTypeError("no feasiable solution found")
+            return []
         elif len(solutions) > 1:
             warn(f"multiple solutions are found, but only one is returned")
         for solution in solutions: # check all derived solution
@@ -276,22 +293,22 @@ class sym_solver(sym_compiler):
     def sympy_solve(self, statement=None):
         #### check-sat
         if len(self.vars) == 0: 
-            raise NoCompliationError("No vars to be solved, re-compile and check the statement")
+            return Result.EXCEPT, "No vars to be solved, re-compile and check the statement"
         if len(self.target_vars) == 0: 
-            raise IllegalGetValueCommand("Statment does not contain get-value or get-model")
+            return Result.EXCEPT, "Statment does not contain get-value or get-model"
         if self.obj:
-            raise InvalidProblemType("Infeasible due to the problem is optimization task")
+            return Result.EXCEPT, "Infeasible due to the problem is optimization task"
         else:
             try:
                 solutions = solve(self.exprs, [self.sympy_vars[key] for key in self.sympy_vars.keys()], dict=True)
             except (ValueError, TypeError, AttributeError, NotImplementedError) as e:
-                raise InvalidProblemType("sympy solve error, " + str(e))
+                return Result.EXCEPT, f"sympy solver fail due to that `{e}"
             check_res = self.type_check(solutions)
         #### get-value
         try:
-            return [check_res[str(var)] for var in self.target_vars]
+            return Result.SAT, [check_res[str(var)] for var in self.target_vars]
         except KeyError as e:
-            raise IllegalGetValueCommand("sympy solver fail due to that get-value is not well-formed")
+            return Result.EXCEPT, "sympy solver fail due to that get-value is not well-formed"
 
     """ __summary__
         The following are the main functions for optimizing
@@ -299,16 +316,19 @@ class sym_solver(sym_compiler):
     def scipy_optim(self, statement=None):
         #### check-sat
         if len(self.vars) == 0: 
-            raise NoCompliationError("No vars to be solved, re-compile and check the statement")
+            return Result.EXCEPT, "No vars to be solved, re-compile and check the statement"
         if len(self.target_vars) == 0: 
-            raise IllegalGetValueCommand("Statment does not contain get-value or get-model")
+            return Result.EXCEPT, "Statment does not contain get-value or get-model"
         solutions = self.optimize()
         check_res = self.type_check(solutions)             
         #### get-value
         try:
-            return [check_res[str(var)] for var in self.target_vars]
+            if check_res != []:
+                return Result.SAT, [check_res[str(var)] for var in self.target_vars]
+            else:
+                return Result.UNKNOWN, "failed to find a feasible solution numerically"
         except KeyError as e:
-            raise IllegalGetValueCommand("sympy solver fail due to that get-value is not well-formed")
+            return Result.EXCEPT, "sympy solver fail due to that get-value is not well-formed"
     
     def check_feasibility(self, res):
         """ check the feasibility of the solution 
@@ -330,12 +350,14 @@ class sym_solver(sym_compiler):
                     if tol < self.check_tol:
                         final_sol[self.sympy_vars[var['name']]] = round(res.x[id])
                     else:
-                        raise InfeasibleSolError(f"the solution {res.x} is not feasible due to {var['name']} is not integer")
+                        # raise InfeasibleSolError(f"the solution {res.x} is not feasible due to {var['name']} is not integer")
+                        return []
                 else:
                     final_sol[self.sympy_vars[var['name']]] = (res.x[id])
             return [final_sol]
         else:
-            raise InfeasibleSolError(f"the solution {res.x} is not feasible, the feasibility loss is {feasibility}")
+            # raise InfeasibleSolError(f"the solution {res.x} is not feasible, the feasibility loss is {feasibility}")
+            return []
         
     def retype_var(self, param):
         """ retype the variable to integer if necessary """
@@ -408,7 +430,7 @@ def globalize(func):
     return result
 
 
-def sympy_solve(statement, solver_name, args):
+def sympy_solve(statement, solver_name, args, pid_mgr):
     s = sym_solver()
     s.compile(statement) 
     if solver_name == "sysol":
