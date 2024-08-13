@@ -384,6 +384,7 @@ class sym_solver(sym_compiler):
             sympy_expr = self.obj + self.cons_penalty*self.cons_loss
         else:
             sympy_expr = self.cons_loss
+        print(sympy_expr)
         try:
             loss = lambdify([self.sympy_vars[key] for key in self.sympy_vars.keys()], sympy_expr, modules='numpy')
         except KeyError as e: # KeyError: 'ComplexInfinity' due to zero division
