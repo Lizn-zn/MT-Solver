@@ -21,8 +21,8 @@ setup(
         "z3-solver",
         "cvc5"
     ],
-    packages=find_packages(where='mtsolver'),  
-    package_dir={'': 'mtsolver'},  
+    package_dir={'main_package': 'mtsolver',},
+    
     include_package_data=True,
     
     entry_points={  
