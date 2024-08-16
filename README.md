@@ -14,4 +14,6 @@ Run `python test/test.py` to test all solvers
 mtsolve --fpath ./test/case3.smt --z3 "--timeout 5"
 ```
 
+# Some issues
 
+- for `test/more_cases/7.smt`, syopt incorrectly give sat and a counter example
