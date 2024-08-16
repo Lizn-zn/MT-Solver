@@ -400,13 +400,10 @@ class sym_solver(sym_compiler):
         #### roll a feasible initial point
         for i in range(self.restart):
             x0 = [np.random.randn()*2**i for _ in range(num_vars)]
-            res = target_func(x0)
+            with np.errstate(divide='ignore', invalid='ignore'):
+                res = target_func(x0)
             if not(np.isnan(res) or np.iscomplex(res) or np.isinf(res)):
                 break
-        # with np.errstate(divide='ignore', invalid='ignore'):
-        #     res = minimize(target_func, x0=x0, tol=self.alg_tol)
-        # ok, sol = self.check_feasibility(res)
-        # if ok == True: return ok, sol
         with np.errstate(divide='ignore', invalid='ignore'):
             try:
                 res = differential_evolution(target_func, maxiter=1000, tol=self.alg_tol, \
