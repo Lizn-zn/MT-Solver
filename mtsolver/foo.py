@@ -1,7 +1,7 @@
 import sys
 import argparse
-from src.solve import solve
-from src.utils import *
+from mtsolver.solve import solve
+from mtsolver.utils import *
         
 def main() -> None:
     parser = argparse.ArgumentParser()

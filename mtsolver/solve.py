@@ -1,9 +1,9 @@
-from src.smt_solve import pysmt_solve
-from src.sym_solve import sympy_solve
-from src.maple_solve import maple_solve
-from src.utils import *
-from src.result import Result
-from src.exceptions import timeout_errors
+from mtsolver.smt_solve import pysmt_solve
+from mtsolver.sym_solve import sympy_solve
+from mtsolver.maple_solve import maple_solve
+from mtsolver.utils import *
+from mtsolver.result import Result
+from mtsolver.exceptions import timeout_errors
 from multiprocessing import Pool, Manager
 
 def solve(statement, solvers):

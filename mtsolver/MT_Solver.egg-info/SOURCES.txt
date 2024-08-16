@@ -1,0 +1,10 @@
+MANIFEST.in
+README.md
+setup.py
+mtsolver/MT_Solver.egg-info/PKG-INFO
+mtsolver/MT_Solver.egg-info/SOURCES.txt
+mtsolver/MT_Solver.egg-info/dependency_links.txt
+mtsolver/MT_Solver.egg-info/entry_points.txt
+mtsolver/MT_Solver.egg-info/requires.txt
+mtsolver/MT_Solver.egg-info/top_level.txt
+test/test.py

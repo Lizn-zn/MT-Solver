@@ -2,9 +2,9 @@ from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import REAL, INT, BOOL, Not, HRPrinter, MaplePrinter
 from io import StringIO
 from warnings import warn
-from src.exceptions import maple_compile_errors, FormulaParseError
-from src.result import Result
-from src.utils import *
+from mtsolver.exceptions import maple_compile_errors, FormulaParseError
+from mtsolver.result import Result
+from mtsolver.utils import *
 
 class maple_compiler:
     """ 

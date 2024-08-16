@@ -11,13 +11,13 @@ from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import REAL, INT, BOOL
 from io import StringIO
 
-from src.result import Result
+from mtsolver.result import Result
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
 
-from src.exceptions import FormulaParseError, OptimParseError, FunctionTypeError, IllegalGetValueCommand
-from src.exceptions import NoCompliationError, InvalidProblemType, SolutionTypeError, InfeasibleSolError
-from src.exceptions import ScipyOptimError
+from mtsolver.exceptions import FormulaParseError, OptimParseError, FunctionTypeError, IllegalGetValueCommand
+from mtsolver.exceptions import NoCompliationError, InvalidProblemType, SolutionTypeError, InfeasibleSolError
+from mtsolver.exceptions import ScipyOptimError
 from sympy.core import SympifyError
 
 from warnings import warn

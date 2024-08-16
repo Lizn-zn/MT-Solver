@@ -6,6 +6,7 @@ setup(
     
     description='An integration of model theory solvers',  
     
+        
     long_description=open('README.md').read(),  
     long_description_content_type='text/markdown',  
     
@@ -20,13 +21,13 @@ setup(
         "z3-solver",
         "cvc5"
     ],
-
-    packages=find_packages(),  
+    packages=find_packages(where='mtsolver'),  
+    package_dir={'': 'mtsolver'},  
     include_package_data=True,
     
     entry_points={  
         'console_scripts': [
-            'mtsolve=src.foo:main',
+            'mtsolve=mtsolver.foo:main',
         ],
     },
 )

@@ -1,10 +1,10 @@
 from io import StringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import Solver, Optimizer
-from src.exceptions import smt_compile_errors, smt_solver_errors, \
+from mtsolver.exceptions import smt_compile_errors, smt_solver_errors, \
                             smt_unsat, smt_unknown
-from src.result import Result
-from src.utils import *
+from mtsolver.result import Result
+from mtsolver.utils import *
 
 def pysmt_solve(statement, solver_name, args, pid_mgr):
     solver_args = normalize(args, solver_name)
