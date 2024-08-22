@@ -48,7 +48,10 @@ def solve(statement, solvers):
                 msg_lst.append(msg)
     finally:
         for pid in pid_mgr:
-            os.killpg(pid, signal.SIGKILL)
+            try:
+                os.killpg(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
         pool.terminate()
         pool.join()
     if all([res == Result.TIMEOUT for res in res_lst]):
