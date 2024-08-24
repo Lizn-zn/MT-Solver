@@ -222,16 +222,13 @@ preprocess := proc(ineqs):
     return newIneqs;
 end proc:
 
-sample := proc(ineqs, vars, eqRemove)
+sample := proc(ineqs, vars)
     local R, res;
     R := PolynomialRing(vars);
     res := SamplePoints(ineqs, R, output='list');
     # if unsat, return
     if res = [] then
         print(`The inequality holds.`);
-        return;
-    elif eqRemove = true then
-        print(`Invalid constrants because Bottema prover does support equality constraints`);
         return;
     else
         # if sat, give counter example

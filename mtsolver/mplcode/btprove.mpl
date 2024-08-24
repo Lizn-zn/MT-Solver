@@ -37,16 +37,10 @@ prove := proc(ineqs, vars)
             error(`Bottema prover does not support logical &or and logical &implies`);
         fi;
     od;
-    local gLhs, gRhs, cons, eqRemove;
+    local gLhs, gRhs, cons;
     cons := [];
-    eqRemove := false;
     for s in sys[1..nops(sys)-1] do
-        if hastype(s, `=`) then
-            print("Bottema prover does not support equality constraint, remove it and try aggresitve proving");
-            eqRemove := true;
-        else:
-            cons := [op(cons), op(andSplit(s))];  
-        fi;
+        cons := [op(cons), op(andSplit(s))];  
     od;  
     goal := sys[nops(sys)];
     if has(goal, `&and`) or has(goal, `&or`) then
@@ -67,8 +61,6 @@ prove := proc(ineqs, vars)
         res := yprove(goal, cons);
         if res = true then
             print(`The inequality holds.`);
-        elif eqRemove = true then
-            error(`Invalid constrants because Bottema prover does support equality constraints`);
         else:
             print(`The inequality does not hold.`);
         fi;
@@ -82,8 +74,6 @@ prove := proc(ineqs, vars)
             goal := (gLhs-gRhs) = 0;
             newEqs := [goal, op(cons)];
             res := sample(newEqs, vars);
-        elif eqRemove = true then
-            error(`Invalid constrants because Bottema prover does support equality constraints`);
         elif res = false then
             print(`The inequality does not hold.`);
         fi;
@@ -91,12 +81,12 @@ prove := proc(ineqs, vars)
         # check feasibility of negated goal (!= 0) using sample
         goal := (gLhs-gRhs) <> 0;
         newEqs := [goal, op(cons)];
-        sample(newEqs, vars, eqRemove); 
+        sample(newEqs, vars); 
     elif relop = `<>` then
         # check feasibility of negated goal (= 0) using sample
         goal := (gLhs-gRhs) = 0;
         newEqs := [goal, op(cons)];
-        sample(newEqs, vars, eqRemove); 
+        sample(newEqs, vars); 
     else
         error(`Invalid formula`, goal, relop);
     fi;
