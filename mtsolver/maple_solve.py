@@ -108,6 +108,7 @@ class maple_solver(maple_compiler):
         prove_cmd = f'prove({polynomials}, {variables});'
         exec_args = f'{settings} {inits} {prove_cmd}'
         timeout = int(args.get("timeout", 30))
+        print(exec_args)
         output, error = wrap_exec('maple', exec_args, timeout, pid_mgr)
         start_marker, end_marker = exec_args, '> quit'
         output = parse_string(output, start_marker, end_marker)
