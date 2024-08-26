@@ -23,7 +23,7 @@ setup(
     ],
     
     packages=find_packages(where='mtsolver'),  
-    package_dir={'': 'mtsolver'},  
+    package_dir={'main_package': 'mtsolver',},
     
     include_package_data=True,
     
