@@ -6,7 +6,6 @@ setup(
     
     description='An integration of model theory solvers',  
     
-        
     long_description=open('README.md').read(),  
     long_description_content_type='text/markdown',  
     
@@ -22,8 +21,7 @@ setup(
         "cvc5"
     ],
     
-    packages=find_packages(where='mtsolver'),  
-    package_dir={'main_package': 'mtsolver',},
+    packages=find_packages(where='.'),  
     
     include_package_data=True,
     
