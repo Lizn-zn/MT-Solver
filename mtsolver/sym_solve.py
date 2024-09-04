@@ -13,6 +13,7 @@ from io import StringIO
 
 from mtsolver.result import Result
 import numpy as np
+np.seterr(over='raise') # raise all overflow warnings
 from scipy.optimize import minimize, differential_evolution
 
 from mtsolver.exceptions import FormulaParseError, OptimParseError, FunctionTypeError, IllegalGetValueCommand
@@ -394,7 +395,7 @@ class sym_solver(sym_compiler):
             try:
                 fresh_param = self.retype_var(param)
                 result = loss(*fresh_param)
-            except (TypeError, OverflowError, ZeroDivisionError, ValueError, NameError, RuntimeWarning) as e:
+            except (TypeError, OverflowError, ZeroDivisionError, ValueError, NameError, FloatingPointError) as e:
                 return np.inf
             return result
         #### roll a feasible initial point
