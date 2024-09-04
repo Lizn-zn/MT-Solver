@@ -394,7 +394,7 @@ class sym_solver(sym_compiler):
             try:
                 fresh_param = self.retype_var(param)
                 result = loss(*fresh_param)
-            except (TypeError, OverflowError, ZeroDivisionError, ValueError, NameError) as e:
+            except (TypeError, OverflowError, ZeroDivisionError, ValueError, NameError, RuntimeWarning) as e:
                 return np.inf
             return result
         #### roll a feasible initial point
