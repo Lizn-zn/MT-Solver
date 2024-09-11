@@ -13,7 +13,6 @@ from io import StringIO
 
 from mtsolver.result import Result
 import numpy as np
-np.seterr(over='raise') # raise all overflow warnings
 from scipy.optimize import minimize, differential_evolution
 
 from mtsolver.exceptions import FormulaParseError, OptimParseError, FunctionTypeError, IllegalGetValueCommand
@@ -401,11 +400,11 @@ class sym_solver(sym_compiler):
         #### roll a feasible initial point
         for i in range(self.restart):
             x0 = [np.random.randn()*2**i for _ in range(num_vars)]
-            with np.errstate(divide='ignore', invalid='ignore'):
+            with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
                 res = target_func(x0)
             if not(np.isnan(res) or np.iscomplex(res) or np.isinf(res)):
                 break
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
             try:
                 res = differential_evolution(target_func, maxiter=1000, tol=self.alg_tol, \
                                             bounds=[(-10000,10000) for _ in range(num_vars)], x0=x0, \
