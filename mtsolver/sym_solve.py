@@ -148,6 +148,9 @@ class sym_compiler:
         elif rel_op == ">":
             relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
                              (0, (lhs-rhs>=self.check_tol)), ((lhs-rhs)**2+100, lhs-rhs<self.check_tol))
+        elif rel_op == "!=":
+            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
+                             (0, (lhs-rhs!=0)), 100000, lhs-rhs==0)
         return relu
         
     def parse_formula(self, formula, encoding=False):
