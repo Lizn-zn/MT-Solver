@@ -1,6 +1,7 @@
 from mtsolver.smt_solve import pysmt_solve
 from mtsolver.sym_solve import sympy_solve
 from mtsolver.maple_solve import maple_solve
+from mtsolver.mma_solve import mtica_solve
 from mtsolver.utils import *
 from mtsolver.result import Result
 from mtsolver.exceptions import timeout_errors
@@ -33,6 +34,9 @@ def solve(statement, solvers):
                 future_res[s] = tmp_solver
             if s in ["mplrc", "mplbt"]:
                 tmp_solver = pool.apply_async(maple_solve, (statement, s, solvers[s], pid_mgr))
+                future_res[s] = tmp_solver
+            if s in ["mmard", "mmafi"]:
+                tmp_solver = pool.apply_async(mtica_solve, (statement, s, solvers[s], pid_mgr))
                 future_res[s] = tmp_solver
         for s in solvers:
             try:

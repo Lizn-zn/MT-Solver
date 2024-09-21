@@ -46,7 +46,8 @@ smt_compile_errors = (PysmtModeError, InvalidCommandArgs, IllegalGetValueCommand
                         PysmtIllegalGetValueCommand, NoStatementError, OperatorMissingError, \
                         PysmtSyntaxError, PysmtTypeError, DefinitionMissingError, InvalidSetOption) 
 sym_compile_errors = (FormulaParseError, FunctionTypeError) # (ValueError, TypeError, SympifyError, TokenError)
-maple_compile_errors = (UnsupportedOperatorError, FormulaParseError) 
+maple_compile_errors = (UnsupportedOperatorError, FormulaParseError)
+mtica_compile_errors = (UnsupportedOperatorError, FormulaParseError)  
 
 # EOC of compilation exceptions
 

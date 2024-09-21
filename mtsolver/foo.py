@@ -14,7 +14,9 @@ def main() -> None:
     parser.add_argument("--sysol", type=str, help="SymPy solve's command line arguments")
     parser.add_argument("--syopt", type=str, help="SymPy optim's command line arguments")
     parser.add_argument("--mplrc", type=str, help="Maple-reduce's command line arguments")
-    parser.add_argument("--mplbt", type=str, help="Maple-reduce's command line arguments")
+    parser.add_argument("--mplbt", type=str, help="Maple-bottema's command line arguments")
+    parser.add_argument("--mmard", type=str, help="Mathematica-reduce's command line arguments")
+    parser.add_argument("--mmafi", type=str, help="Mathematica-findinstance's command line arguments")
     args = parser.parse_args()
     
     if args.fpath:
@@ -27,7 +29,7 @@ def main() -> None:
     args = vars(args)
     solvers = {}
     for s in args:
-        if s in ["z3", "cvc5", "msat", "sysol", "syopt", "mplrc", "mplbt"] and args[s]:
+        if s in ["z3", "cvc5", "msat", "sysol", "syopt", "mplrc", "mplbt", "mmard", "mmafi"] and args[s]:
             solvers[s] = parse_args(args[s])
     ok, msg = solve(statement, solvers=solvers)
     print(ok, file=sys.stdout)
