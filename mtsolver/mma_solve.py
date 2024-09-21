@@ -68,7 +68,7 @@ class mtica_compiler:
                 tmp_name, tmp_vars, tmp_type, tmp_expr = cmd.args
                 self.define_fun_rec(tmp_name, tmp_vars, tmp_type, tmp_expr)
             elif cmd.name == "assert":
-                tmp_exprs.append(cmd.args[0])
+                self.parse_formula(cmd.args[0])
             elif cmd.name == "minimize":
                 self.parse_objective(cmd.args[0], minimize=True)
             elif cmd.name == "maximize":
@@ -79,10 +79,6 @@ class mtica_compiler:
                 self.target_vars = [arg for arg in cmd.args]
             elif cmd.name == "get-model":
                 self.target_vars = self.vars
-        # the last expr should be negated
-        for expr in tmp_exprs[:-1]:
-            self.parse_formula(expr)
-        self.parse_formula(Not(tmp_exprs[-1]))
         
 
 class mtica_solver(mtica_compiler):
