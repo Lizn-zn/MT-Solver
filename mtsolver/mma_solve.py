@@ -109,7 +109,9 @@ class mtica_solver(mtica_compiler):
             return Result.UNSAT, "no counter example exists"
         else:
             res = output.strip()
-            if res != "": 
+            if "No valid password found" in res: 
+                return Result.EXCEPT, output+error
+            elif res != "": 
                 return Result.SAT, res
             else:   
                 # print(exec_args)
@@ -121,7 +123,7 @@ def mtica_solve(statement, solver_name, args, pid_mgr):
     try:
         s.compile(statement) 
     except mtica_compile_errors as e:
-        return Result.EXCEPT, f"maple compilation failed: {e}"
+        return Result.EXCEPT, f"mathematica compilation failed: {e}"
     res = s.solve(args, solver_name, pid_mgr)
     return res
 
