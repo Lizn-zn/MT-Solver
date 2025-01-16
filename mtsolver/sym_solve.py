@@ -1,7 +1,7 @@
-from sympy import symbols, parse_expr, solve, lambdify, Function, Lambda
+from sympy import Symbol, symbols, parse_expr, solve, lambdify, Function, Lambda
 from sympy import Piecewise, floor, binomial, isprime, factorial
 from sympy import reduce_inequalities, simplify
-from sympy import Eq, Le, Lt, asin, acos
+from sympy import Eq, Le, Lt, Gt, Ge, asin, acos
 from sympy import Not, And, Or
 from sympy import nan, oo
 from sympy.codegen.cfunctions import log2, log
@@ -303,7 +303,16 @@ class sym_solver(sym_compiler):
             return Result.EXCEPT, "Infeasible due to the problem is optimization task"
         else:
             try:
-                solutions = solve(self.exprs, [self.sympy_vars[key] for key in self.sympy_vars.keys()], dict=True)
+                x = Symbol("x", positive=True, real=True)
+                mappings = {self.sympy_vars[key] : x for key in self.sympy_vars.keys()}
+                exprs = [expr.xreplace(mappings) for expr in self.exprs[:-1] if expr.func == Eq]
+                expr = self.exprs[-1].xreplace(mappings)
+                if expr.func == Lt:
+                    expr.append(Eq(expr.args[0] - expr.args[1], -0.01))
+                elif expr.func == Gt:
+                    exprs.append(Eq(expr.args[0] - expr.args[1], 0.01))
+                x_sol = solve(exprs, x, dict=True)
+                solutions = [{self.sympy_vars[key] : x_sol[0][x] for key in self.sympy_vars.keys()}]
             except (ValueError, TypeError, AttributeError, NotImplementedError) as e:
                 return Result.EXCEPT, f"sympy solver fail due to that `{e}"
             check_res = self.type_check(solutions)
