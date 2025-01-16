@@ -308,16 +308,19 @@ class sym_solver(sym_compiler):
                 exprs = [expr.xreplace(mappings) for expr in self.exprs[:-1] if expr.func == Eq]
                 expr = self.exprs[-1].xreplace(mappings)
                 if expr.func == Lt:
-                    expr.append(Eq(expr.args[0] - expr.args[1], -0.01))
+                    exprs.append(Eq(expr.args[0] - expr.args[1], -0.01))
                 elif expr.func == Gt:
                     exprs.append(Eq(expr.args[0] - expr.args[1], 0.01))
                 x_sol = solve(exprs, x, dict=True)
-                solutions = [{self.sympy_vars[key] : x_sol[0][x] for key in self.sympy_vars.keys()}]
+                if x_sol == []:
+                    return Result.UNKNOWN, "failed to find a feasible solution numerically"
+                else:
+                    solutions = [{self.sympy_vars[key] : x_sol[0][x] for key in self.sympy_vars.keys()}]
             except (ValueError, TypeError, AttributeError, NotImplementedError) as e:
                 return Result.EXCEPT, f"sympy solver fail due to that `{e}"
-            check_res = self.type_check(solutions)
         #### get-value
         try:
+            check_res = self.type_check(solutions)
             return Result.SAT, [check_res[str(var)] for var in self.target_vars]
         except KeyError as e:
             return Result.EXCEPT, "sympy solver fail due to that get-value is not well-formed"
