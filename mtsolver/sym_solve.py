@@ -319,9 +319,10 @@ class sym_solver(sym_compiler):
             except (ValueError, TypeError, AttributeError, NotImplementedError) as e:
                 return Result.EXCEPT, f"sympy solver fail due to that `{e}"
         #### get-value
+        check_res = self.type_check(solutions)
         try:
-            check_res = self.type_check(solutions)
-            return Result.SAT, [check_res[str(var)] for var in self.target_vars]
+            res = ", ".join([f"{var} := {check_res[str(var)]}" for var in self.target_vars])
+            return Result.SAT, f"[{res}]"
         except KeyError as e:
             return Result.EXCEPT, "sympy solver fail due to that get-value is not well-formed"
 
@@ -339,7 +340,8 @@ class sym_solver(sym_compiler):
         #### get-value
         try:
             if check_res != []:
-                return Result.SAT, [check_res[str(var)] for var in self.target_vars]
+                res = ", ".join([f"{var} := {check_res[str(var)]}" for var in self.target_vars])
+                return Result.SAT, f"[{res}]"
             else:
                 return Result.UNKNOWN, "failed to find a feasible solution numerically"
         except KeyError as e:
