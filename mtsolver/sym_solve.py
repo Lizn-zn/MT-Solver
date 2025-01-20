@@ -311,6 +311,8 @@ class sym_solver(sym_compiler):
                     exprs.append(Eq(expr.args[0] - expr.args[1], -0.01))
                 elif expr.func == Gt:
                     exprs.append(Eq(expr.args[0] - expr.args[1], 0.01))
+                else:
+                    exprs.append(False)
                 x_sol = solve(exprs, x, dict=True)
                 if x_sol == []:
                     return Result.UNKNOWN, "failed to find a feasible solution numerically"
