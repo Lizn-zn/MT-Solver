@@ -385,7 +385,7 @@ prove:=proc(polys,vars)
         return(false):
     else
         l, r := op(expr):
-        tempjg:=ter_sex(l - r, vars):
+        tempjg:=ter_sex(r - l, vars):
         if tempjg = false then
             print(`The poly cannot be proved by schd-based method`):
 			return(false):

@@ -3,9 +3,9 @@ import sys
 from mtsolver.prove import prove
 
 statements = {}
-for filename in os.listdir('./test/cases'):
+for filename in os.listdir('./test/sos_cases'):
     if filename.endswith(".smt"):
-        filepath = os.path.join('./test/cases', filename)
+        filepath = os.path.join('./test/sos_cases', filename)
         with open(filepath, 'r', encoding='utf-8') as file:
                 content = file.read() 
         statements[int(filename[:-4])] = content

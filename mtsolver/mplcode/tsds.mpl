@@ -538,7 +538,7 @@ prove := proc(polys, vars)
         return(false):
     else
         l, r := op(expr):
-        result := tsds(l - r):
+        result := tsds(r - l):
         if result = false then
             print(`The poly cannot be proved by sds-based method`):
             return(false):
@@ -551,3 +551,4 @@ end proc:
 
 
 # prove([(a > 0), (b > 0), (c > 0), (((a ^ 2) + (b ^ 2)) = (2 * a * b)),&not(((2 * (a ^ 2) * (b ^ 3)) <= ((a ^ 2) + (b ^ 6))))], [b,a]);
+prove([(0 <= a),(0 <= b),(0 <= c),&not((((a + b + c) ^ 3) <= ((3 + (a ^ 5) + ((-1) * (a ^ 2))) * (3 + (b ^ 5) + ((-1) * (b ^ 2))) * (3 + (c ^ 5) + ((-1) * (c ^ 2))))))], [a,b,c]);
