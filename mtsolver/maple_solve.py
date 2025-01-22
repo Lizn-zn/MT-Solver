@@ -133,4 +133,48 @@ def maple_solve(statement, solver_name, args, pid_mgr):
     res = s.solve(args, solver_name, pid_mgr)
     return res
 
-            
+
+class maple_prover(maple_compiler):
+    def __init__(self):
+        """ hyper-parameters setting
+        """
+        maple_compiler.__init__(self)
+        dir_path = os.path.dirname(__file__)
+        self.mpl_utils = os.path.join(dir_path, "./mplcode/utils.mpl")
+        self.mpl_schd = os.path.join(dir_path, "./mplcode/schd.mpl")
+        self.mpl_tsds = os.path.join(dir_path, "./mplcode/tsds.mpl")
+        
+    def reset(self):
+        self.solutions = []
+    
+    def prove(self, args, solver_name, pid_mgr):
+        """ solve and parse the result 
+        """        
+        # for mpl setting to mute some prints
+        settings = "interface(printbytes=false, prettyprint=0):"
+        # prover selection
+        if solver_name == "schd":
+            inits = f'read "{self.mpl_schd}":'
+        elif solver_name == "tsds":
+            inits = f'read "{self.mpl_tsds}":'
+        polynomials = "[" + ",".join([f"{expr}" for expr in self.exprs]) + "]"
+        variables = "[" + ",".join([f"{var['name']}" for var in self.vars]) + "]"
+        prove_cmd = f'prove({polynomials}, {variables});'
+        exec_args = f'{settings} {inits} {prove_cmd}'
+        timeout = int(args.get("timeout", 30))
+        output, error = wrap_exec('maple', exec_args, timeout, pid_mgr)
+        start_marker, end_marker = 'start to prove', '> quit'
+        output = parse_string(output, start_marker, end_marker)
+        if "The poly is proved to be sum-of-squares" in output:
+            return True, "SOS method proves the poly"
+        else:
+            return False, output+error
+        
+def maple_prove(statement, solver_name, args, pid_mgr):
+    s = maple_prover()
+    try:
+        s.compile(statement) 
+    except maple_compile_errors as e:
+        return False, f"maple compilation failed: {e}"
+    res = s.prove(args, solver_name, pid_mgr)
+    return res

@@ -45,7 +45,7 @@ prove := proc(ineqs, vars)
     goal := sys[nops(sys)];
     if has(goal, `&and`) or has(goal, `&or`) then
         error(`The proof goal should not contain logical &and or logical &or`);
-    elif op(0, goal) = `&not` then
+    elif has(op(0, goal), `&not`) then
         goal := op(goal);
         # reverse them
         gLhs := lhs(goal); 
