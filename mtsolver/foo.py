@@ -1,9 +1,10 @@
 import sys
 import argparse
 from mtsolver.solve import solve
+from mtsolver.prove import prove
 from mtsolver.utils import *
         
-def main() -> None:
+def solve_main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fpath", type=str, required=False,
                         help="Input SMT-LIB file. If `None`, it reads formula from stdin until `(check-sat)`")
@@ -34,3 +35,31 @@ def main() -> None:
     ok, msg = solve(statement, solvers=solvers)
     print(ok, file=sys.stdout)
     print(msg, file=sys.stderr)
+    
+    
+def prove_main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fpath", type=str, required=False,
+                        help="Input SMT-LIB file. If `None`, it reads formula from stdin until `(check-sat)`")
+    parser.add_argument("--tsds", type=str, help="TSDS's command line arguments")
+    parser.add_argument("--schd", type=str, help="SCHD's command line arguments")
+    args = parser.parse_args()
+    
+    if args.fpath:
+        with open(args.fpath, "r") as f:
+            statement = f.read()
+    else:
+        statement = sys.stdin.read()
+    if "check-sat" not in statement:
+        raise ValueError("Invalid statement in the input")
+    args = vars(args)
+    solvers = {}
+    for s in args:
+        if s in ["tsds", "schd"] and args[s]:
+            solvers[s] = parse_args(args[s])
+    ok, msg = prove(statement, solvers=solvers)
+    print(ok, file=sys.stdout)
+    print(msg, file=sys.stderr)
+    
+    
+    

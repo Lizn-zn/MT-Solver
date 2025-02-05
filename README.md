@@ -9,11 +9,11 @@ pip install git@github.com:Lizn-zn/MT_Solver.git
 Run `python test/test.py` to test all solvers
 
 # Usage
-
+- SMT solver checks satisfiability of a formula
 ```shell
-mtsolve --fpath ./test/case3.smt --z3 "--timeout 5"
+mtsolve --fpath ./test/cases/3.smt --z3 "--timeout 5"
 ```
-
-# Some issues
-
-- for `test/more_cases/7.smt`, syopt incorrectly give sat and a counter example
+- SOS prover checks a formula is a sum of squares
+```shell
+mtprove --fpath ./test/cases/3.smt --tsds "--timeout 5"
+```

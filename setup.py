@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='MT_Solver',  
+    name='mt-solver',  
     version='0.1',  
     
     description='An integration of model theory solvers',  
@@ -27,7 +27,8 @@ setup(
     
     entry_points={  
         'console_scripts': [
-            'mtsolve=mtsolver.foo:main',
+            'mtsolve=mtsolver.foo:solve_main',
+            'mtprove=mtsolver.foo:prove_main',
         ],
     },
 )
