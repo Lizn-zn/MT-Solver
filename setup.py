@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='mt-solver',  
+    name='MT-Solver',  
     version='0.1',  
     
     description='An integration of model theory solvers',  

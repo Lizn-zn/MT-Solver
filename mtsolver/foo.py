@@ -3,7 +3,7 @@ import argparse
 from mtsolver.solve import solve
 from mtsolver.prove import prove
 from mtsolver.utils import *
-        
+
 def solve_main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--fpath", type=str, required=False,
