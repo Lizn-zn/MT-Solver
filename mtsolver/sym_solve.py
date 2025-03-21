@@ -23,27 +23,30 @@ from sympy.core import SympifyError
 from warnings import warn
 
 class sym_compiler:
-    """ 
-        The class to compile the SMT-LIB2 format statement into sympy format
-    """
+    """Compiles SMT-LIB2 format statements into sympy format."""
+    
     def __init__(self):
-        self.transformations = (standard_transformations + (implicit_multiplication_application,) + (convert_xor,))
+        self.transformations = (
+            standard_transformations + 
+            (implicit_multiplication_application,) + 
+            (convert_xor,)
+        )
+        
         self.word_dict = {
-            "log": log, 
-            "prime": isprime, 
-            "log2": log2, 
-            "binomial": binomial, 
-            'asin': asin, 
-            'acos': acos, 
-            'round': floor, 
-            'factorial': factorial, 
-            'Not': Not, 
-            'Nan': nan, 
-            'oo': oo}
-        # this list is to avoid the compile of existing functions
-        self.conflict_list = ["sqrt", "tan", "sec"] 
-        self.value_of_infinty = 1e8 # use this value instead of oo
-        self.check_tol = 1e-3
+            "log": log,
+            "prime": isprime,
+            "log2": log2,
+            "binomial": binomial,
+            'asin': asin,
+            'acos': acos,
+            'round': floor,
+            'factorial': factorial,
+            'Not': Not,
+            'Nan': nan,
+            'oo': oo
+        }
+        # Renamed for clarity
+        self.reserved_function_names = ["sqrt", "tan", "sec"]
         
     def _reset(self):
         self.vars, self.target_vars, self.exprs, self.terms = [], [], [], []
@@ -64,14 +67,14 @@ class sym_compiler:
     
     def declare_fun(self, name, input_types, output_type):
         """ Declare a function for solving """
-        if name in self.conflict_list:
+        if name in self.reserved_function_names:
             warn(f"function {name} is already defined, skip it but may cause some error")
             return
         self.func_vars[name] = Function(name)
 
     def define_fun(self, name, vars, rtype, expr):
         """ Define a function for solving """
-        if name in self.conflict_list:
+        if name in self.reserved_function_names:
             warn(f"function {name} is already defined, skip it but may cause some error")
             return
         tmp_func_vars = []
@@ -132,26 +135,6 @@ class sym_compiler:
             raise FormulaParseError("sym formula complier failed in expression %s, due to %s" %(formula, e))
         return expr
     
-    def encode_loss(self, lhs, rhs, rel_op):
-        if rel_op == "=":
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             ((lhs-rhs)**2, And(lhs-rhs>-oo, lhs-rhs<oo)))
-        elif rel_op == "<=":
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs<=0)), ((lhs-rhs)**2, lhs-rhs>0))
-        elif rel_op == "<":
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs<=-self.check_tol)), ((lhs-rhs)**2+100, lhs-rhs>-self.check_tol))
-        elif rel_op == ">=":
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs>=0)), ((lhs-rhs)**2, lhs-rhs<0))
-        elif rel_op == ">":
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs>=self.check_tol)), ((lhs-rhs)**2+100, lhs-rhs<self.check_tol))
-        elif rel_op == "!=":
-            relu = Piecewise((self.value_of_infinty, Eq(lhs-rhs, -oo)), (self.value_of_infinty, Eq(lhs-rhs, oo)), \
-                             (0, (lhs-rhs!=0)), 100000, lhs-rhs==0)
-        return relu
         
     def parse_formula(self, formula, encoding=False):
         """ Parse the formula into sympy format 
@@ -162,56 +145,41 @@ class sym_compiler:
             lhs, rhs = formula.args()
             lhs, rhs = self.parse(lhs.serialize()), self.parse(rhs.serialize())
             expr = Eq(lhs, rhs)
-            relu = self.encode_loss(lhs, rhs, "=")
         elif formula.is_not():
             expr = formula.args()[0]
             expr = self.parse(expr.serialize())
             expr = Not(expr)
-            relu = self.encode_loss(expr.lhs, expr.rhs, expr.rel_op)
         elif formula.is_le():
             lhs, rhs = formula.args()
             lhs, rhs = self.parse(lhs.serialize()), self.parse(rhs.serialize())
             expr = Le(lhs, rhs)
-            relu = self.encode_loss(lhs, rhs, "<=")
         elif formula.is_lt():
             lhs, rhs = formula.args()
             lhs, rhs = self.parse(lhs.serialize()), self.parse(rhs.serialize())
             expr = Lt(lhs, rhs)
-            relu = self.encode_loss(lhs, rhs, "<")
         elif formula.is_and():
             """e.g. lhs = (0 <= final_ahmed); rhs = (final_ahmed <= 100)"""
-            expr, relu = [], 0.0
+            expr = []
             for subformula in formula.args():
-                e, r = self.parse_formula(subformula, encoding=False)
+                e = self.parse_formula(subformula, encoding=False)
                 expr.append(e)
-                relu = relu + r
             expr = And(*expr)
         elif formula.is_or():
             """e.g. lhs = (0 <= final_ahmed); rhs = (final_ahmed <= 100)"""
-            expr, relu = [], 0.0
+            expr = []
             for subformula in formula.args():
-                e, r = self.parse_formula(subformula, encoding=False)
+                e = self.parse_formula(subformula, encoding=False)
                 expr.append(e)
-                relu = relu * r
             expr = Or(*expr)
         else:
             raise FormulaParseError("sym formula complier is still not support this type of expression %s" %(formula))
         # save the expr and relu
         if encoding == True:
             self.exprs.append(expr)
-            self.terms.append(relu)
         else:
-            return expr, relu
+            return expr
 
-    def parse_objective(self, formula, minimize=True):
-        self.min_or_max = 1 if minimize else -1
-        try:
-            obj = parse_expr(str(formula.serialize()), local_dict={**self.sympy_vars, **self.word_dict}, transformations=self.transformations)
-            obj = self.min_or_max * obj
-        except (ValueError, SyntaxError):
-            raise OptimParseError("sym objective function complier is still not support this type of expression %s" %(formula))
-        return obj
-    
+
     def compile(self, statement):
         self._reset()
         smt_parser = SmtLibParser()
@@ -238,9 +206,9 @@ class sym_compiler:
                 except SympifyError:
                     raise FormulaParseError("sym formula complier failed in expression %s" %(cmd.args[0]))
             elif cmd.name == "minimize":
-                self.parse_objective(cmd.args[0], minimize=True)
+                raise OptimParseError("sym formula complier is still not support this type of expression %s" %(cmd.args[0]))
             elif cmd.name == "maximize":
-                self.parse_objective(cmd.args[0], minimize=False)
+                raise OptimParseError("sym formula complier is still not support this type of expression %s" %(cmd.args[0]))
             elif cmd.name == "check-sat": # ignore check-sat
                 continue
             elif cmd.name == "get-value":
@@ -256,10 +224,9 @@ class sym_solver(sym_compiler):
             check_tol is the tolerance for the check-sat command
         """
         sym_compiler.__init__(self)
-        self.restart = 10
-        self.cons_penalty, self.alg_tol = 1e3, 1e-5
         
     def reset(self):
+        """Reset the solver state."""
         self.solutions = []
             
     def type_check(self, solutions):
@@ -341,7 +308,6 @@ class sym_solver(sym_compiler):
         """
         We simply call sympy to check whether the last formula is satisfiable (without considering the constraint)
         """
-        print(expr.func)
         if expr.func == Ne:
             left, right = expr.args
             res = simplify(left - right) == 0
@@ -409,10 +375,24 @@ class sym_solver(sym_compiler):
 
 
 def sympy_solve(statement, solver_name, args, pid_mgr):
-    s = sym_solver()
-    s.compile(statement) 
+    """
+    Solve symbolic math problems using the specified solver.
+    
+    Args:
+        statement: The SMT-LIB2 format statement to solve
+        solver_name: Name of the solver to use ('sysol' or 'syopt')
+        args: Additional solver arguments
+        pid_mgr: Process ID manager
+        
+    Returns:
+        tuple: (Result enum, solution string or error message)
+    """
+    solver = sym_solver()
+    solver.compile(statement)
+    
     if solver_name == "sysol":
-        res = s.sympy_prove()
-    elif solver_name == "syopt": 
-        res = s.sympy_solve()
-    return res
+        return solver.sympy_prove()
+    elif solver_name == "syopt":
+        return solver.sympy_solve()
+    else:
+        return Result.EXCEPT, f"Unknown solver: {solver_name}"
