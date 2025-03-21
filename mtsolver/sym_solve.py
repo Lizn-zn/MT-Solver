@@ -1,6 +1,6 @@
 from sympy import Symbol, symbols, parse_expr, solve, lambdify, Function, Lambda
 from sympy import Piecewise, floor, binomial, isprime, factorial
-from sympy import reduce_inequalities, simplify
+from sympy import reduce_inequalities, simplify, sympify, powsimp, powdenest
 from sympy import Eq, Ne, Le, Lt, Gt, Ge, asin, acos
 from sympy import Not, And, Or
 from sympy import nan, oo
@@ -304,30 +304,37 @@ class sym_solver(sym_compiler):
             return Result.EXCEPT, "No vars to be solved, re-compile and check the statement"
         if len(self.target_vars) == 0: 
             return Result.EXCEPT, "Statment does not contain get-value or get-model"
-        expr = self.exprs[-1]
+        tmp_mappings = {}
+        for (name, var) in self.sympy_vars.items():
+            if f"0 < {var}" in [str(e) for e in self.exprs] or f"0 <= {var}" in [str(e) for e in self.exprs]:
+                pos_symbol = Symbol(name, positive=True)
+                tmp_mappings[var] = pos_symbol 
+        goal = self.exprs[-1].xreplace(tmp_mappings)
         """
         We simply call sympy to check whether the last formula is satisfiable (without considering the constraint)
         """
-        if expr.func == Ne:
-            left, right = expr.args
-            res = simplify(left - right) == 0
-        elif expr.func == Gt:
-            left, right = expr.args
+        if goal.func == Ne:
+            left, right = goal.args
+            sympy_expr = powsimp(powdenest(left - right, force=True), force=True)
+            sympy_expr = simplify(sympy_expr, force=True)
+            res = sympy_expr == 0
+        elif goal.func == Gt:
+            left, right = goal.args
             res = simplify(left - right) <= 0
-        elif expr.func == Lt:
-            left, right = expr.args
+        elif goal.func == Lt:
+            left, right = goal.args
             res = simplify(left - right) >= 0
-        elif expr.func == Ge:
-            left, right = expr.args
+        elif goal.func == Ge:
+            left, right = goal.args
             res = simplify(left - right) < 0
-        elif expr.func == Le:
-            left, right = expr.args
+        elif goal.func == Le:
+            left, right = goal.args
             res = simplify(left - right) > 0
-        elif expr.func == Eq:
-            left, right = expr.args
+        elif goal.func == Eq:
+            left, right = goal.args
             res = simplify(left - right) != 0
         else:
-            raise FormulaParseError("sym formula complier is still not support this type of expression %s" %(expr))
+            raise FormulaParseError("sym formula complier is still not support this type of expression %s" %(goal))
         
         if res == True:
             return Result.UNSAT, "The last formula is unsatisfiable"
