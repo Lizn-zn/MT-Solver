@@ -1,7 +1,7 @@
 from sympy import Symbol, symbols, parse_expr, solve, lambdify, Function, Lambda
 from sympy import Piecewise, floor, binomial, isprime, factorial
 from sympy import reduce_inequalities, simplify
-from sympy import Eq, Le, Lt, Gt, Ge, asin, acos
+from sympy import Eq, Ne, Le, Lt, Gt, Ge, asin, acos
 from sympy import Not, And, Or
 from sympy import nan, oo
 from sympy.codegen.cfunctions import log2, log
@@ -331,23 +331,42 @@ class sym_solver(sym_compiler):
     """ __summary__
         The following are the main functions for optimizing
     """
-    def scipy_optim(self, statement=None):
+    def sympy_prove(self, statement=None):
         #### check-sat
         if len(self.vars) == 0: 
             return Result.EXCEPT, "No vars to be solved, re-compile and check the statement"
         if len(self.target_vars) == 0: 
             return Result.EXCEPT, "Statment does not contain get-value or get-model"
-        solutions = self.optimize()
-        check_res = self.type_check(solutions)             
-        #### get-value
-        try:
-            if check_res != []:
-                res = ", ".join([f"{var} := {check_res[str(var)]}" for var in self.target_vars])
-                return Result.SAT, f"[{res}]"
-            else:
-                return Result.UNKNOWN, "failed to find a feasible solution numerically"
-        except KeyError as e:
-            return Result.EXCEPT, "sympy solver fail due to that get-value is not well-formed"
+        expr = self.exprs[-1]
+        """
+        We simply call sympy to check whether the last formula is satisfiable (without considering the constraint)
+        """
+        print(expr.func)
+        if expr.func == Ne:
+            left, right = expr.args
+            res = simplify(left - right) == 0
+        elif expr.func == Gt:
+            left, right = expr.args
+            res = simplify(left - right) <= 0
+        elif expr.func == Lt:
+            left, right = expr.args
+            res = simplify(left - right) >= 0
+        elif expr.func == Ge:
+            left, right = expr.args
+            res = simplify(left - right) < 0
+        elif expr.func == Le:
+            left, right = expr.args
+            res = simplify(left - right) > 0
+        elif expr.func == Eq:
+            left, right = expr.args
+            res = simplify(left - right) != 0
+        else:
+            raise FormulaParseError("sym formula complier is still not support this type of expression %s" %(expr))
+        
+        if res == True:
+            return Result.UNSAT, "The last formula is unsatisfiable"
+        else:
+            return Result.UNKNOWN, "The last formula cannot be proved without using any context"
     
     def check_feasibility(self, res):
         """ check the feasibility of the solution 
@@ -387,70 +406,13 @@ class sym_solver(sym_compiler):
             else:
                 fresh_param.append(p)        
         return fresh_param
-    
-    def optimize(self):
-        """build and solve the objective function"""
-        num_vars = len(self.vars)
-        # integrality is a list of boolean to denote whether integer cons
-        self.integrality = [] 
-        for var in self.vars:
-            if var['type'].is_int_type():
-                self.integrality.append(True)
-            elif var['type'].is_real_type() or var['type'].is_complex_type():
-                self.integrality.append(False)
-        self.cons_loss = sum(self.terms)
-        if self.obj:
-            sympy_expr = self.obj + self.cons_penalty*self.cons_loss
-        else:
-            sympy_expr = self.cons_loss
-        try:
-            loss = lambdify([self.sympy_vars[key] for key in self.sympy_vars.keys()], sympy_expr, modules='numpy')
-        except KeyError as e: # KeyError: 'ComplexInfinity' due to zero division
-            raise OptimParseError(f"failed to lambdify the sympy expression into loss due to {e}")
-        # wrap the loss function
-        @globalize
-        def target_func(param):
-            try:
-                fresh_param = self.retype_var(param)
-                result = loss(*fresh_param)
-            except (TypeError, OverflowError, ZeroDivisionError, ValueError, NameError, FloatingPointError) as e:
-                return np.inf
-            return result
-        #### roll a feasible initial point
-        for i in range(self.restart):
-            x0 = [np.random.randn()*2**i for _ in range(num_vars)]
-            with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
-                res = target_func(x0)
-            if not(np.isnan(res) or np.iscomplex(res) or np.isinf(res)):
-                break
-        with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
-            try:
-                res = differential_evolution(target_func, maxiter=1000, tol=self.alg_tol, \
-                                            bounds=[(-10000,10000) for _ in range(num_vars)], x0=x0, \
-                                            integrality=self.integrality, updating='deferred', workers=1)
-            except OverflowError as e:
-                raise ScipyOptimError("scipy optim error, " + str(e))
-        sol = self.check_feasibility(res)
-        return sol
-    
-import uuid, sys
-def globalize(func):
-    """ 
-        Globalize function for multiprocessing in differential evolution 
-        https://gist.github.com/EdwinChan/3c13d3a746bb3ec5082f
-    """
-    def result(*args, **kwargs):
-        return func(*args, **kwargs)
-    result.__name__ = result.__qualname__ = uuid.uuid4().hex
-    setattr(sys.modules[result.__module__], result.__name__, result)
-    return result
 
 
 def sympy_solve(statement, solver_name, args, pid_mgr):
     s = sym_solver()
     s.compile(statement) 
     if solver_name == "sysol":
-        res = s.sympy_solve()
+        res = s.sympy_prove()
     elif solver_name == "syopt": 
-        res = s.scipy_optim()
+        res = s.sympy_solve()
     return res
