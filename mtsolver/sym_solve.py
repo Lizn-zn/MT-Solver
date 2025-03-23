@@ -313,7 +313,9 @@ class sym_solver(sym_compiler):
         """
         We simply call sympy to check whether the last formula is satisfiable (without considering the constraint)
         """
-        if goal.func == Ne:
+        if goal == False:
+            res = True # False is unsatisfiable
+        elif goal.func == Ne:
             left, right = goal.args
             sympy_expr = powsimp(powdenest(left - right, force=True), force=True)
             sympy_expr = simplify(sympy_expr, force=True)
