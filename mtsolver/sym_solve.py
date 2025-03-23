@@ -306,7 +306,7 @@ class sym_solver(sym_compiler):
             return Result.EXCEPT, "Statment does not contain get-value or get-model"
         tmp_mappings = {}
         for (name, var) in self.sympy_vars.items():
-            if f"0 < {var}" in [str(e) for e in self.exprs] or f"0 <= {var}" in [str(e) for e in self.exprs]:
+            if f"0.0 < {var}" in [str(e) for e in self.exprs] or f"0.0 <= {var}" in [str(e) for e in self.exprs]:
                 pos_symbol = Symbol(name, positive=True)
                 tmp_mappings[var] = pos_symbol 
         goal = self.exprs[-1].xreplace(tmp_mappings)
