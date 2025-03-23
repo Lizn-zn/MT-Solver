@@ -317,9 +317,10 @@ class sym_solver(sym_compiler):
             res = True # False is unsatisfiable
         elif goal.func == Ne:
             left, right = goal.args
+            res0 = simplify(left - right)
             sympy_expr = powsimp(powdenest(left - right, force=True), force=True)
-            sympy_expr = simplify(sympy_expr, force=True)
-            res = sympy_expr == 0
+            res1 = simplify(sympy_expr, force=True)
+            res = res0 == 0 or res1 == 0
         elif goal.func == Gt:
             left, right = goal.args
             res = simplify(left - right) <= 0

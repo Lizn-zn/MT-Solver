@@ -1,0 +1,8 @@
+(declare-const b Real)
+(declare-const a Real)
+(assert (< (+ a b) 6.0))
+(assert (< 0.0 b))
+(assert (< 0.0 a))
+(assert (distinct (- (^ (* (sqrt 2.0) (sqrt (+ (^ (/ 1.0 (sqrt (+ 1.0 a))) 2) (^ (+ (/ 1.0 (sqrt (+ 1.0 b))) (/ (sqrt (* a b)) (sqrt (+ (* a b) 8.0)))) 2)))) 2) 4.0) (- (+ (/ 2.0 (+ a 1.0)) (* 2.0 (^ (+ (/ 1.0 (sqrt (+ b 1.0))) (/ (* (sqrt a) (sqrt b)) (sqrt (+ (* a b) 8.0)))) 2))) 4.0)))
+(check-sat)
+(get-model)
