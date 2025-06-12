@@ -32,6 +32,10 @@ def solve_main() -> None:
     for s in args:
         if s in ["z3", "cvc5", "msat", "sysol", "syopt", "mplrc", "mplbt", "mmard", "mmafi"] and args[s]:
             solvers[s] = parse_args(args[s])
+    if len(solvers) == 0:
+        print("No solvers provided, using default solvers z3 and cvc5")
+        for s in ["z3", "cvc5"]:
+            solvers[s] = {"timeout": 5}
     ok, msg = solve(statement, solvers=solvers)
     print(ok, file=sys.stdout)
     print(msg, file=sys.stderr)
